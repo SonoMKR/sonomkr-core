@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<node name="Controller">
+	<interface name="fr.sonomkr.Controller">
+		<property name="isRunning" type="b" access="read"/>
+		<property name="autoStart" type="b" access="readwrite"/>
+		<property name="currentConfig" type="s" access="readwrite"/>
+		<property name="configList" type="as" access="read"/>
+		<method name="startAcquisition">
+		</method>
+		<method name="stopAcquisition">
+		</method>
+		<method name="createConfig">
+			<arg name="name" type="s" direction="in"/>
+		</method>
+		<method name="duplicateCurrentConfig">
+			<arg name="name" type="s" direction="in"/>
+		</method>
+	</interface>
+</node>
+<node name="Channel_1">
+	<interface name="fr.sonomkr.Channels">
+		<property name="active" type="b" access="readwrite"/>
+		<property name="minFreq" type="i" access="readwrite"/>
+		<property name="maxFreq" type="i" access="readwrite"/>
+		<property name="fileName" type="s" access="readwrite"/>
+		<property name="ftpDir" type="s" access="readwrite"/>
+	</interface>
+	<node name="DataStream">
+		<interface name="fr.sonomkr.ChannelData">
+			<signal name="newSpectrum">
+				<arg name="data" type="s" direction="out"/>
+			</signal>
+		</interface>		
+	</node>
+</node>
+<node name="Channel_2">
+	<interface name="fr.sonomkr.Channels">
+		<property name="active" type="b" access="readwrite"/>
+		<property name="minFreq" type="i" access="readwrite"/>
+		<property name="maxFreq" type="i" access="readwrite"/>
+		<property name="fileName" type="s" access="readwrite"/>
+		<property name="ftpDir" type="s" access="readwrite"/>
+	</interface>
+	<node name="DataStream">
+		<interface name="fr.sonomkr.ChannelData">
+			<signal name="newSpectrum">
+				<arg name="data" type="s" direction="out"/>
+			</signal>
+		</interface>		
+	</node>
+</node>
+<node name="FileSave">
+	<interface name="fr.sonomkr.FileSave">
+		<property name="baseName" type="s" access="readwrite"/>
+		<property name="extension" type="s" access="readwrite"/>
+		<property name="duration" type="i" access="readwrite"/>
+		<property name="folder" type="s" access="readwrite"/>
+	</interface>
+</node>
+<node name="FtpPush">
+	<interface name="fr.sonomkr.FtpPush">
+		<property name="active" type="b" access="readwrite"/>
+		<property name="server" type="s" access="readwrite"/>
+		<property name="port" type="s" access="readwrite"/>
+		<property name="user" type="s" access="readwrite"/>
+		<property name="password" type="s" access="readwrite"/>
+		<property name="homeDir" type="s" access="readwrite"/>
+	</interface>
+</node>
+<node name="Indicators">
+	<interface name="fr.sonomkr.IndicatorList">
+		<property name="numIndicator" type="i" access="read"/>
+		<method name="addIndicatorDose">
+			<arg name="name" type="s" direction="in"/>
+			<arg name="channel" type="i" direction="in"/>
+		</method>
+		<method name="addIndicatorRunningLeq">
+			<arg name="name" type="s" direction="in"/>
+			<arg name="channel" type="i" direction="in"/>
+		</method>
+		<method name="addIndicatorRecompLeq">
+			<arg name="name" type="s" direction="in"/>
+			<arg name="channel" type="i" direction="in"/>
+		</method>
+		<method name="deleteIndicatorAt">
+			<arg name="index" type="i" direction="in"/>
+		</method>
+	</interface>
+	<node name="1">
+		<interface name="fr.sonomkr.Indicator">
+			<property name="channel" type="i" access="readwrite"/>
+			<property name="name" type="s" access="readwrite"/>
+			<property name="type" type="s" access="read"/>
+			<property name="timeStart" type="s" access="readwrite"/>
+			<property name="timeStop" type="s" access="readwrite"/>
+			<property name="numTriggers" type="i" access="read"/>
+			<method name="addTrigger">
+				<arg name="threshold" type="d" direction="in"/>
+			</method>
+			<method name="deleteTriggerAt">
+				<arg name="index" type="i" direction="in"/>
+			</method>
+		</interface>
+		<node name="Triggers">
+			<node name="1">
+				<interface name="fr.sonomkr.Trigger">
+					<property name="threshold" type="d" access="readwrite"/>
+					<property name="preTrigger" type="i" access="readwrite"/>
+					<property name="postTrigger" type="i" access="readwrite"/>
+					<property name="alarmId" type="i" access="readwrite"/>
+					<property name="alarmUrl" type="s" access="readwrite"/>
+					<property name="alarmUrlPath" type="s" access="readwrite"/>
+				</interface>
+			</node>
+			<node name="2">
+				<interface name="fr.sonomkr.Trigger">
+					<property name="threshold" type="d" access="readwrite"/>
+					<property name="preTrigger" type="i" access="readwrite"/>
+					<property name="postTrigger" type="i" access="readwrite"/>
+					<property name="alarmId" type="i" access="readwrite"/>
+					<property name="alarmUrl" type="s" access="readwrite"/>
+					<property name="alarmUrlPath" type="s" access="readwrite"/>
+				</interface>
+			</node>
+		</node>
+	</node>
+	<node name="2">
+		<interface name="fr.sonomkr.Indicator">
+			<property name="channel" type="i" access="readwrite"/>
+			<property name="name" type="s" access="readwrite"/>
+			<property name="type" type="s" access="read"/>
+			<property name="timeStart" type="s" access="readwrite"/>
+			<property name="timeStop" type="s" access="readwrite"/>
+			<property name="numTriggers" type="i" access="read"/>
+			<method name="addTrigger">
+				<arg name="threshold" type="d" direction="in"/>
+			</method>
+			<method name="deleteTriggerAt">
+				<arg name="index" type="i" direction="in"/>
+			</method>
+		</interface>
+	</node>
+</node>

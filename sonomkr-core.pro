@@ -3,7 +3,7 @@ CONFIG += console c++14
 CONFIG -= app_bundle
 CONFIG -= qt
 
-LIBS += -pthread
+LIBS += -pthread -lasound -lconfig++
 
 SOURCES += main.cpp \
     SignalProcessing/audiocapture.cpp \
@@ -22,4 +22,12 @@ HEADERS += \
     Shared/ringbuffer.h \
     Shared/ringbufferconsumer.h \
     SignalProcessing/leq.h \
-    SignalProcessing/audiobuffer.h
+    SignalProcessing/audiobuffer.h \
+    defines.h \
+    Dbus/Adaptors/controller.h \
+    Dbus/Adaptors/channel.h
+
+DISTFILES += \
+    Dbus/sonomkr-dbus-interface.xml \
+    Dbus/fr.sonomkr.controller.xml \
+    Dbus/fr.sonomkr.channel.xml
