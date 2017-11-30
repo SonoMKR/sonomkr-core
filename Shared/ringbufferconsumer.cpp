@@ -42,7 +42,7 @@ template<class T>
 void RingBufferConsumer<T>::start()
 {
     _doRead = true;
-    _readThread = thread(this->run);
+    _readThread = thread(&RingBufferConsumer<T>::run, this);
 }
 
 template<class T>

@@ -1,10 +1,21 @@
 #include <iostream>
 
+#include "SignalProcessing/sos_coefficients.h"
+#include "SignalProcessing/leq.h"
+#include "SignalProcessing/audiobuffer.h"
+
 using namespace std;
 
 int main()
 {
+    AudioBuffer* buffer = new AudioBuffer(48000);
+    Leq leq_1KHz(buffer, 1024, NB_FILTERS, SOS_1kHz);
+
+    leq_1KHz.start();
+
     cout << "Hello World!" << endl;
+
+    while(true) {}
     return 0;
 }
 

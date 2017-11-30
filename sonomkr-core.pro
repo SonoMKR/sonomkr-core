@@ -1,14 +1,18 @@
 TEMPLATE = app
-CONFIG += console c++11
+CONFIG += console c++14
 CONFIG -= app_bundle
 CONFIG -= qt
+
+LIBS += -pthread
 
 SOURCES += main.cpp \
     SignalProcessing/audiocapture.cpp \
     SignalProcessing/biquadfilter.cpp \
     SignalProcessing/iirfilter.cpp \
     Shared/ringbuffer.cpp \
-    Shared/ringbufferconsumer.cpp
+    Shared/ringbufferconsumer.cpp \
+    SignalProcessing/leq.cpp \
+    SignalProcessing/audiobuffer.cpp
 
 HEADERS += \
     SignalProcessing/audiocapture.h \
@@ -16,4 +20,6 @@ HEADERS += \
     SignalProcessing/sos_coefficients.h \
     SignalProcessing/iirfilter.h \
     Shared/ringbuffer.h \
-    Shared/ringbufferconsumer.h
+    Shared/ringbufferconsumer.h \
+    SignalProcessing/leq.h \
+    SignalProcessing/audiobuffer.h

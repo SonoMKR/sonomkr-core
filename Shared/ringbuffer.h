@@ -1,24 +1,28 @@
 #ifndef RINGBUFFER_H
 #define RINGBUFFER_H
 
-#include <mutex>
-#include <atomic>
+#include <shared_mutex>
 #include <condition_variable>
 #include <vector>
 
 using namespace std;
 
 struct BufferReader {
-    mutex* readerMutex;
-    condition_variable* readerMutexCondition;
     ulong readPosition;
     uint sizeReadable;
+
+    BufferReader(ulong startPosition) {
+        readPosition = startPosition;
+        sizeReadable = 0;
+    }
 };
 
-template <typename T>
+template <class T>
 class RingBuffer
 {
 private:
+    shared_timed_mutex _mutex;
+    condition_variable_any _notify;
     T* _buffer;
     ulong _bufferSize;
     ulong _writePosition;
@@ -26,8 +30,8 @@ private:
     vector<BufferReader> _readersList;
 
 public:
-    RingBuffer<T>(const int& size);
-    ~RingBuffer<T>();
+    RingBuffer(const int& size);
+    ~RingBuffer();
     int registerReader();
     bool waitToBeginRead(const int &readerIndex, const uint& sizeToRead, ulong &readPosition);
     void endRead(const int& readerIndex, const int &sizeRed);
@@ -41,5 +45,7 @@ public:
         return _bufferSize;
     }
 };
+
+template class RingBuffer<float>;
 
 #endif // RINGBUFFER_H

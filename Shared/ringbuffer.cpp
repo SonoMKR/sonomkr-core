@@ -17,12 +17,7 @@ RingBuffer<T>::~RingBuffer()
 template<class T>
 int RingBuffer<T>::registerReader()
 {
-    _readersList.push_back(BufferReader{
-        new mutex(),
-        new condition_variable(),
-        _writePosition,
-        0
-    });
+    _readersList.push_back(BufferReader(_writePosition));
     return _readersList.size() - 1;
 }
 
@@ -32,9 +27,12 @@ bool RingBuffer<T>::waitToBeginRead(const int &readerIndex, const uint &sizeToRe
     uint sizeReadable = _readersList[readerIndex].sizeReadable;
 
     if (sizeReadable < sizeToRead) {
-        unique_lock<mutex> lock(_readersList[readerIndex].readerMutex);
-        _readersList[readerIndex].readerMutexCondition->wait(lock);
+        shared_lock<shared_timed_mutex> lock(_mutex); //, defer_lock);
+        _notify.wait(lock);
         lock.unlock();
+        if (sizeReadable < sizeToRead) { // handle spurious wakeup
+            return false;
+        }
     }
 
     readPosition = _readersList[readerIndex].readPosition;
@@ -61,8 +59,9 @@ void RingBuffer<T>::writeToBuffer(const T *inputBuffer, const int &sizeToWrite)
     for(int i = 0; i < _readersList.size(); ++i)
     {
         _readersList[i].sizeReadable += sizeToWrite;
-        _readersList[i].readerMutexCondition->notify_one();
     }
+
+    _notify.notify_all();
 }
 
 template<class T>

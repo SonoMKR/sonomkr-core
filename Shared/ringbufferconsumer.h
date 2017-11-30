@@ -3,12 +3,12 @@
 
 #include <thread>
 
-template<typename T>
+template<class T>
 class RingBuffer;
 
 using namespace std;
 
-template<typename T>
+template<class T>
 class RingBufferConsumer
 {
 private:
@@ -24,11 +24,13 @@ protected:
     virtual int processData(ulong readPosition) = 0;
 
 public:
-    RingBufferConsumer<T>(RingBuffer<T>* buffer, int sizeToRead);
-    virtual ~RingBufferConsumer<T>();
+    RingBufferConsumer(RingBuffer<T>* buffer, int sizeToRead);
+    virtual ~RingBufferConsumer();
     void run();
     void start();
     void pause();
 };
+
+template class RingBufferConsumer<float>;
 
 #endif // RINGBUFFERCONSUMER_H
