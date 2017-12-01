@@ -1,6 +1,9 @@
 #ifndef LEQ_H
 #define LEQ_H
 
+#include <math.h>
+#include <iostream>
+
 #include "../Shared/ringbuffer.h"
 #include "../Shared/ringbufferconsumer.h"
 #include "iirfilter.h"
@@ -8,6 +11,9 @@
 class Leq: public RingBufferConsumer<float>
 {
 private:
+    uint _readCounter;
+    float _accumulator;
+
     IirFilter _filter;
     RingBuffer<float> _leqBuffer;
 

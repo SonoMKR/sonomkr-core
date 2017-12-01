@@ -35,7 +35,7 @@ void AudioCapture::run()
     }
 
     _periodBuf = new char[_periodsize * _framesize];
-    _audioBuffer->resetBuffer();
+    _audioBuffer->resetBuffers();
 
     struct sched_param schp;
     memset(&schp, 0, sizeof(schp));
@@ -44,14 +44,14 @@ void AudioCapture::run()
         //("Can't set sched_setscheduler (%d) - using normal priority", err);
     }
 
-    while(_doCapture) {
+    while (_doCapture) {
         while ((pcmreturn = snd_pcm_readi(_captureHandle, _periodBuf,
                         _periodsize)) < 0) {
             snd_pcm_prepare(_captureHandle);
         }
 
         int count = _periodsize * _framesize; // number of values to write to ring buffer
-        _audioBuffer->writeToBuffer(_periodBuf, count);
+        _audioBuffer->writeAudioToBuffers(_periodBuf, count, _channels, _formatBit);
     }
     snd_pcm_close(_captureHandle);
     free(_periodBuf);
