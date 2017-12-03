@@ -29,6 +29,8 @@ public:
     void run();
     void start();
     void pause();
+
+    void waitUntilDone();
 };
 
 template class RingBufferConsumer<float>;

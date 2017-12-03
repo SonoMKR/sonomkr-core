@@ -50,3 +50,9 @@ void RingBufferConsumer<T>::pause()
 {
     _doRead = false;
 }
+
+template<class T>
+void RingBufferConsumer<T>::waitUntilDone()
+{
+    _readThread.join();
+}

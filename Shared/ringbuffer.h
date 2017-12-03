@@ -1,8 +1,11 @@
 #ifndef RINGBUFFER_H
 #define RINGBUFFER_H
 
+#include <iostream>
+
 #include <shared_mutex>
 #include <condition_variable>
+#include <atomic>
 #include <vector>
 
 using namespace std;
@@ -41,7 +44,7 @@ public:
     inline T* getBufferPtr() {
         return _buffer;
     }
-    inline unsigned long getBufferSize() {
+    inline ulong getBufferSize() {
         return _bufferSize;
     }
 };

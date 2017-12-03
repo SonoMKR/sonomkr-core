@@ -1,6 +1,8 @@
 #ifndef AUDIOCAPTURE_H
 #define AUDIOCAPTURE_H
 
+#include <iostream>
+
 #include <thread>
 #include <string>
 #include <alsa/asoundlib.h>

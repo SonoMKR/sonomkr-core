@@ -5,7 +5,7 @@ AudioCapture::AudioCapture(AudioBuffer* audioBuffer)
     _audioBuffer = audioBuffer;
 
     _formatBit = 16;
-    _pcmName = "hw:1,0";
+    _pcmName = "hw:0,0";
     _rate = 44100;
 
     _samplesize = (_formatBit == 24) ? (32 / 8) : (_formatBit / 8);
@@ -48,6 +48,7 @@ void AudioCapture::run()
         while ((pcmreturn = snd_pcm_readi(_captureHandle, _periodBuf,
                         _periodsize)) < 0) {
             snd_pcm_prepare(_captureHandle);
+            // Buffer Overrun
         }
 
         int count = _periodsize * _framesize; // number of values to write to ring buffer

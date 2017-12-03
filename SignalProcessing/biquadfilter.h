@@ -19,7 +19,7 @@ public:
     void initialize(double coefficients[6]);
     void reset();
 
-    double filter(double sample);
+    double filter(double &sample);
 };
 
 #endif // BIQUADFILTER_H

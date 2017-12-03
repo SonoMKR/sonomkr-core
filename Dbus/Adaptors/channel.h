@@ -6,7 +6,7 @@
 #ifndef __dbusxx__Adaptors_channel_h__ADAPTOR_MARSHAL_H
 #define __dbusxx__Adaptors_channel_h__ADAPTOR_MARSHAL_H
 
-#include <dbus-c++/dbus.h>
+#include <dbus-c++-1/dbus-c++/dbus.h>
 #include <cassert>
 
 namespace fr {
