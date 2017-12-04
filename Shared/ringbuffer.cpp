@@ -17,31 +17,31 @@ RingBuffer<T>::~RingBuffer()
 template<class T>
 int RingBuffer<T>::registerReader()
 {
-    _readersList.push_back(BufferReader(_writePosition));
+    _readersList.push_back(new BufferReader(_writePosition));
     return _readersList.size() - 1;
 }
 
 template<class T>
 bool RingBuffer<T>::waitToBeginRead(const int &readerIndex, const uint &sizeToRead, ulong &readPosition)
 {
-    if (_readersList[readerIndex].sizeReadable < sizeToRead) {
+    if (_readersList[readerIndex]->sizeReadable.load() < sizeToRead) {
         shared_lock<shared_timed_mutex> lock(_mutex);
         _notify.wait(lock);
         lock.unlock();
-        if (_readersList[readerIndex].sizeReadable < sizeToRead) { // handle spurious wakeup
+        if (_readersList[readerIndex]->sizeReadable.load() < sizeToRead) { // handle spurious wakeup
             return false;
         }
     }
 
-    readPosition = _readersList[readerIndex].readPosition;
+    readPosition = _readersList[readerIndex]->readPosition;
     return true;
 }
 
 template<class T>
 void RingBuffer<T>::endRead(const int &readerIndex, const int &sizeRed)
 {
-    _readersList[readerIndex].sizeReadable -= sizeRed;
-    _readersList[readerIndex].readPosition = (_readersList[readerIndex].readPosition + sizeRed) % _bufferSize;
+    _readersList[readerIndex]->sizeReadable -= sizeRed;
+    _readersList[readerIndex]->readPosition = (_readersList[readerIndex]->readPosition + sizeRed) % _bufferSize;
 }
 
 template<class T>
@@ -56,7 +56,7 @@ void RingBuffer<T>::writeToBuffer(const T *inputBuffer, const int &sizeToWrite)
 
     for(uint i = 0; i < _readersList.size(); ++i)
     {
-        _readersList[i].sizeReadable += sizeToWrite;
+        _readersList[i]->sizeReadable += sizeToWrite;
     }
 
     _notify.notify_all();
@@ -69,7 +69,7 @@ void RingBuffer<T>::resetBuffer()
 
     for(uint i = 0; i <  _readersList.size(); ++i)
     {
-        _readersList[i].sizeReadable = 0;
-        _readersList[i].readPosition = 0;
+        _readersList[i]->sizeReadable = 0;
+        _readersList[i]->readPosition = 0;
     }
 }

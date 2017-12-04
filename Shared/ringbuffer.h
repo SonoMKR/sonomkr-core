@@ -12,7 +12,7 @@ using namespace std;
 
 struct BufferReader {
     ulong readPosition;
-    uint sizeReadable;
+    atomic<uint> sizeReadable;
 
     BufferReader(ulong startPosition) {
         readPosition = startPosition;
@@ -30,7 +30,7 @@ private:
     ulong _bufferSize;
     ulong _writePosition;
 
-    vector<BufferReader> _readersList;
+    vector<BufferReader*> _readersList;
 
 public:
     RingBuffer(const int& size);
