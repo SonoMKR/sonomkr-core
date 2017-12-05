@@ -7,6 +7,7 @@
 #include "Dbus/Adaptors/channel.h"
 #include "SignalProcessing/audiobuffer.h"
 #include "SignalProcessing/leqfilter.h"
+#include "SignalProcessing/antialiasingfilter.h"
 #include "Shared/ringbuffer.h"
 #include "Shared/ringbufferconsumer.h"
 #include "defines.h"
@@ -26,12 +27,18 @@ private:
     int _fmin, _fmax;
     RingBuffer<float>* _inputBuffer;
     vector<Leq> _leqs;
+    vector<AntiAliasingFilter*> _aliasingFilters;
 
     int processData(ulong readPosition);
 
 public:
-    SpectrumChannel(int channel, int fmin, int fmax, RingBuffer<float>* inputBuffer, int sizeToRead);
-
+    SpectrumChannel(
+            RingBuffer<float>* inputBuffer,
+            int sizeToRead,
+            int channel,
+            int fmin,
+            int fmax);
+    ~SpectrumChannel();
     void run();
     void start();
     void pause();

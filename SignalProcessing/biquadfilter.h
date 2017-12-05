@@ -1,6 +1,10 @@
 #ifndef BIQUADFILTER_H
 #define BIQUADFILTER_H
 
+#include <array>
+
+using namespace std;
+
 class BiquadFilter
 {
 private:
@@ -15,8 +19,8 @@ private:
 
 public:
     BiquadFilter();
-    BiquadFilter(double coefficients[6]);
-    void initialize(double coefficients[6]);
+    BiquadFilter(array<double, 6> coefficients);
+    void initialize(array<double, 6> coefficients);
     void reset();
 
     double filter(double &sample);

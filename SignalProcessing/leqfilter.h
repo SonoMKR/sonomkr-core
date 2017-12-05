@@ -7,6 +7,7 @@
 
 #include "../Shared/ringbuffer.h"
 #include "../Shared/ringbufferconsumer.h"
+#include "sos_coefficients.h"
 #include "iirfilter.h"
 
 using namespace std;
@@ -32,7 +33,14 @@ private:
     int processData(ulong readPosition);
 
 public:
-    LeqFilter(RingBuffer<float> *buffer, int sizeToRead, int rate, float integrationPeriode, int nbFilters, double sosCoefficients[][6]);
+    LeqFilter(
+        RingBuffer<float> *buffer,
+        int sizeToRead,
+        int rate,
+        float integrationPeriode,
+        int nbFilters,
+        array<array<double,6>,NB_SOS> sosCoefficients
+    );
     ~LeqFilter();
 
     bool beginReadLeq(const int& sizeToRead, int& readPosition);

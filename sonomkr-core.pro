@@ -17,7 +17,9 @@ SOURCES += main.cpp \
     configuration.cpp \
     spectrumchannel.cpp \
     spectrum.cpp \
-    SignalProcessing/leqfilter.cpp
+    SignalProcessing/leqfilter.cpp \
+    SignalProcessing/antialiasingfilter.cpp \
+    SignalProcessing/sos_coefficients.cpp
 
 HEADERS += \
     SignalProcessing/audiocapture.h \
@@ -35,7 +37,8 @@ HEADERS += \
     configuration.h \
     spectrumchannel.h \
     spectrum.h \
-    SignalProcessing/leqfilter.h
+    SignalProcessing/leqfilter.h \
+    SignalProcessing/antialiasingfilter.h
 
 DISTFILES += \
     Dbus/sonomkr-dbus-interface.xml \

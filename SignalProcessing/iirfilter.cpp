@@ -3,7 +3,7 @@
 
 #include <iostream>
 
-IirFilter::IirFilter(int nbFilters, double sosCoefficients[][6]):
+IirFilter::IirFilter(int nbFilters, array<array<double, 6>, NB_SOS> sosCoefficients):
     _nbFilters(nbFilters)
 {
     _filters = new BiquadFilter[_nbFilters];
