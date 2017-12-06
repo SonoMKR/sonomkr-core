@@ -12,7 +12,7 @@ AudioBuffer::AudioBuffer(int nbChannels, ulong size):
 
 AudioBuffer::~AudioBuffer()
 {
-    for (int i = 0; i < _channelBuffers.size; ++i) {
+    for (int i = 0; i < _channelBuffers.size(); ++i) {
         delete _channelBuffers[i];
     }
 }

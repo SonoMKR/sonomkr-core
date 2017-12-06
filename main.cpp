@@ -12,7 +12,7 @@ using namespace std;
 
 int main()
 {
-    AudioBuffer* buffer = new AudioBuffer(1, 48000 * 30);
+    AudioBuffer* buffer = new AudioBuffer(1, 44100 * 30);
 
     AudioCapture* catpure = new AudioCapture(buffer);
     catpure->start();
@@ -21,10 +21,12 @@ int main()
 
     SpectrumChannel* channelOne = new SpectrumChannel(
                 buffer->getChannelBuffer(0),
-                4096,
+                1000,
                 1,
                 FREQ_20Hz,
-                FREQ_20kHz
+                FREQ_20kHz,
+                44100,
+                0.5
             );
 //    SpectrumChannel* channelOne = new SpectrumChannel(1, 0, 0, sine->getBuffer(), 4096);
 

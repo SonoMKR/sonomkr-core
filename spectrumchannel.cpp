@@ -8,15 +8,24 @@ SpectrumChannel::SpectrumChannel(
         int sizeToRead,
         int channel,
         int fmin,
-        int fmax):
+        int fmax,
+        int sampleRate,
+        float integrationPeriod):
     RingBufferConsumer<float>(inputBuffer, sizeToRead),
     _channel(channel),
     _fmin(fmin),
     _fmax(fmax),
-    _inputBuffer(inputBuffer)
+    _inputBuffer(inputBuffer),
+    _sampleRate(sampleRate),
+    _integrationPeriod(integrationPeriod)
 {
-    int sampleRate = 44100;
-    float integrationPeriod = 1.0;
+    _spectrumBufferSize = int(300 / _integrationPeriod); // allways 300 seconds => 5 min
+    _spectrumBuffer = new Spectrum[_spectrumBufferSize];
+    _spectrumWritePosition = 0;
+
+    _lastTime = system_clock::from_time_t(time(nullptr)); // ignore milliseconds
+    _lastMilliseconds = 0;
+    _spectrumBuffer[_spectrumWritePosition].reset(_fmin, _fmax, _lastTime);
 
     if (_fmin < FREQ_2kHz && (sampleRate % 10 == 0))
     {
@@ -56,7 +65,7 @@ SpectrumChannel::SpectrumChannel(
                                 inputBuffer,
                                 _sizeToRead,
                                 sampleRate,
-                                integrationPeriod,
+                                _integrationPeriod,
                                 NB_SOS,
                                 sos::getCoefficients(freq))
                             });
@@ -69,7 +78,7 @@ SpectrumChannel::SpectrumChannel(
                                 _aliasingFilters[0]->getOutputBuffer(),
                                 _sizeToRead / 10,
                                 sampleRate / 10,
-                                integrationPeriod,
+                                _integrationPeriod,
                                 NB_SOS,
                                 sos::getCoefficients(freq))
                             });
@@ -82,7 +91,7 @@ SpectrumChannel::SpectrumChannel(
                                 _aliasingFilters[1]->getOutputBuffer(),
                                 _sizeToRead / 100,
                                 sampleRate / 100,
-                                integrationPeriod,
+                                _integrationPeriod,
                                 NB_SOS,
                                 sos::getCoefficients(freq))
                             });
@@ -95,7 +104,7 @@ SpectrumChannel::SpectrumChannel(
                                 _aliasingFilters[2]->getOutputBuffer(),
                                 _sizeToRead / 1000,
                                 sampleRate / 1000,
-                                integrationPeriod,
+                                _integrationPeriod,
                                 NB_SOS,
                                 sos::getCoefficients(freq))
                             });
@@ -112,21 +121,38 @@ SpectrumChannel::~SpectrumChannel()
 
 int SpectrumChannel::processData(ulong readPosition)
 {
-    bool print = false;
+    // readPosition is ignored, we only use it to sync on the audio thread
     for (int i = 0; i < _leqs.size(); i++)
     {
         int leqReadPosition;
-        if (_leqs[i].filter->beginReadLeq(1, leqReadPosition))
+        bool readyRead = _leqs[i].filter->beginReadLeq(1, leqReadPosition);
+        if (!readyRead)
         {
-            print = true;
-            float* buffer = _leqs[i].filter->getLeqBuffer();
-            std::cout << buffer[leqReadPosition];
-            _leqs[i].filter->endReadLeq(1);
+            continue;
         }
-    }
-    if (print)
-    {
-        std::cout << std::endl;
+        if (leqReadPosition > _spectrumWritePosition)
+        {
+            // leqRead and sepctrumWrite should be in sync
+            // so continue and wait for the current spectrum to be filled
+            // will get the next leq value next time
+            _leqs[i].filter->endReadLeq(0);
+        }
+        else
+        {
+            float* buffer = _leqs[i].filter->getLeqBuffer();
+            _spectrumBuffer[_spectrumWritePosition].setLeq(_leqs[i].freq, buffer[leqReadPosition]);
+            _leqs[i].filter->endReadLeq(1);
+
+            if (_spectrumBuffer[_spectrumWritePosition].isFull())
+            {
+                _spectrumBuffer[_spectrumWritePosition].toString();
+                _spectrumWritePosition = (_spectrumWritePosition + 1) % _spectrumBufferSize;
+                 milliseconds increment(int(_integrationPeriod * 1000));
+                _lastTime += increment;
+                _spectrumBuffer[_spectrumWritePosition].reset(_fmin, _fmax, _lastTime);
+            }
+
+        }
     }
 
     return _sizeToRead;
