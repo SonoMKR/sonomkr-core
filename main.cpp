@@ -1,41 +1,39 @@
 #include <iostream>
+#include <libconfig.h++>
+#include <zmqpp/zmqpp.hpp>
 
-#include "SignalProcessing/leqfilter.h"
-#include "SignalProcessing/audiobuffer.h"
-#include "SignalProcessing/audiocapture.h"
-#include "SignalProcessing/sinegenerator.h"
+#include "configuration.h"
+#include "maincontroller.h"
 
-#include "spectrumchannel.h"
 #include "defines.h"
 
 using namespace std;
 
 int main()
 {
-    AudioBuffer* buffer = new AudioBuffer(1, 44100 * 30);
+    string path = "./sonomkr.conf";
 
-    AudioCapture* catpure = new AudioCapture(buffer);
-    catpure->start();
-//    SineGenerator* sine = new SineGenerator(2000.0, 44100);
-//    sine->start();
+    // Read the file. If there is an error, report it and exit.
+    try {
+        Configuration config(path);
+        zmqpp::context context;
 
-    SpectrumChannel* channelOne = new SpectrumChannel(
-                buffer->getChannelBuffer(0),
-                1000,
-                1,
-                FREQ_20Hz,
-                FREQ_20kHz,
-                44100,
-                0.5
-            );
-//    SpectrumChannel* channelOne = new SpectrumChannel(1, 0, 0, sine->getBuffer(), 4096);
+        MainController* controller = new MainController(&config, &context);
+        controller->start();
+        controller->waitUntilDone();
+        return EXIT_SUCCESS;
+    }
+    catch (const FileIOException& fioex) {
+        std::cerr << "I/O error while reading file." << std::endl;
+        return EXIT_FAILURE;
+    }
+    catch (const ParseException& pex) {
+        std::cerr << "Parse error at " << pex.getFile() << ":" << pex.getLine()
+                  << " - " << pex.getError() << std::endl;
+        return EXIT_FAILURE;
+    }
 
-    channelOne->start();
-
-    cout << "Hello World!" << endl;
-
-    channelOne->waitUntilDone();
-    return 0;
+    // initialize the 0MQ context
 }
 
 /*

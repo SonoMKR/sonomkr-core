@@ -34,7 +34,7 @@ void BiquadFilter::reset()
     _delay2 = 0;
 }
 
-double BiquadFilter::filter(double &sample)
+double BiquadFilter::filter(double sample)
 {
     double inputAcc = sample;
     double outputAcc = 0;

@@ -30,9 +30,8 @@ void SineGenerator::run()
 
     while (_doSine) {
 
-        for (int i = 0; i < _periodsize; i++)
-        {
-            _periodBuf[i] = sin(2 * 3.141592653589793 * _freq * lastTime);
+        for (int i = 0; i < _periodsize; i++) {
+            _periodBuf[i] = sin(2.0 * 3.141592653589793 * _freq * lastTime);
             lastTime += 1.0 / float(_rate);
         }
 

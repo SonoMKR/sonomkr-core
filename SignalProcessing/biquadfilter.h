@@ -5,8 +5,7 @@
 
 using namespace std;
 
-class BiquadFilter
-{
+class BiquadFilter {
 private:
     double _b0;
     double _b1;
@@ -23,7 +22,7 @@ public:
     void initialize(array<double, 6> coefficients);
     void reset();
 
-    double filter(double &sample);
+    double filter(double sample);
 };
 
 #endif // BIQUADFILTER_H

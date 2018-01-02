@@ -3,7 +3,9 @@ CONFIG += console c++14
 CONFIG -= app_bundle
 CONFIG -= qt
 
-LIBS += -pthread -lasound -lconfig++ -ldbus-c++-1 -ldbus-1
+LIBS += -pthread -lasound -lconfig++ -lzmq -lzmqpp
+
+QMAKE_CXXFLAGS += -O3
 
 SOURCES += main.cpp \
     SignalProcessing/audiocapture.cpp \
@@ -38,9 +40,11 @@ HEADERS += \
     spectrumchannel.h \
     spectrum.h \
     SignalProcessing/leqfilter.h \
-    SignalProcessing/antialiasingfilter.h
+    SignalProcessing/antialiasingfilter.h \
+    Shared/dbus_vtable.hpp
 
 DISTFILES += \
     Dbus/sonomkr-dbus-interface.xml \
     Dbus/fr.sonomkr.controller.xml \
-    Dbus/fr.sonomkr.channel.xml
+    Dbus/fr.sonomkr.channel.xml \
+    sonomkr.conf

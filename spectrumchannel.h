@@ -2,9 +2,11 @@
 #define SPECTRUMCHANNEL_H
 
 #include <vector>
+#include <string>
 #include <chrono>
+#include <zmqpp/zmqpp.hpp>
 
-#include "Dbus/Adaptors/channel.h"
+#include "configuration.h"
 #include "SignalProcessing/audiobuffer.h"
 #include "SignalProcessing/leqfilter.h"
 #include "SignalProcessing/antialiasingfilter.h"
@@ -13,22 +15,20 @@
 #include "spectrum.h"
 #include "defines.h"
 
-struct Leq
-{
+struct Leq {
     int freq;
     LeqFilter* filter;
 };
 
 using namespace std;
 using namespace std::chrono;
-using namespace std::chrono;
+using namespace zmqpp;
 
-class SpectrumChannel : public RingBufferConsumer<float>
-//        public fr::sonomkr::Channel_adaptor,
-{
-
+class SpectrumChannel : public RingBufferConsumer<float> {
 private:
-    int _channel;
+    Configuration* _config;
+    context* _zmqContext;
+    socket _zmqPubSocket;
     int _fmin, _fmax;
     int _sampleRate;
     float _integrationPeriod;
@@ -44,18 +44,26 @@ private:
     int _spectrumBufferSize;
     int _spectrumWritePosition;
 
+    void newSpectrum(string spectrumStr);
+
 public:
-    SpectrumChannel(RingBuffer<float>* inputBuffer,
-            int sizeToRead,
-            int channel,
-            int fmin,
-            int fmax,
-            int sampleRate,
-            float integrationPeriod);
+    SpectrumChannel(Configuration* config, int channel,
+                    RingBuffer<float>* inputBuffer, int sizeToRead,
+                    context* zmqContext);
     ~SpectrumChannel();
     void run();
     void start();
-    void pause();
+    void stop();
+
+    int getMinFreq() {
+        return _fmin;
+    }
+    int getMaxFreq() {
+        return _fmax;
+    }
+    bool isActive() {
+        return _doRead;
+    }
 };
 
 #endif // SPECTRUMCHANNEL_H

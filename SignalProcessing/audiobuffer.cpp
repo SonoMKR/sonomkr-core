@@ -1,12 +1,29 @@
 #include "audiobuffer.h"
 
-AudioBuffer::AudioBuffer(int nbChannels, ulong size):
-    _bufferSize(size),
-    _nbChannels(nbChannels)
+AudioBuffer::AudioBuffer(Configuration* config):
+    _config(config)
 {
-    _channelBuffers.push_back(new RingBuffer<float>(_bufferSize));
-    if (nbChannels >= 2) {
+#ifdef SINE_TEST
+    _lastTime = 0;
+#endif
+
+    int sampleRate = _config->getSetting(string(AUDIO_SAMPLERATE_PATH));
+    _bufferSize = sampleRate * 30;
+
+    bool isCh1Active = _config->getSetting(string(CH1_ACTIVE_PATH));
+    bool isCh2Active = _config->getSetting(string(CH2_ACTIVE_PATH));
+    _nbChannels = 0;
+    if (isCh1Active) {
         _channelBuffers.push_back(new RingBuffer<float>(_bufferSize));
+        _nbChannels++;
+    }
+    if (isCh2Active) {
+        _channelBuffers.push_back(new RingBuffer<float>(_bufferSize));
+        _nbChannels++;
+    }
+
+    if (!isCh1Active && !isCh2Active) {
+        //no active channels... why ?
     }
 }
 
@@ -25,7 +42,7 @@ void AudioBuffer::resetBuffers()
 }
 
 
-RingBuffer<float> *AudioBuffer::getChannelBuffer(int channel)
+RingBuffer<float>* AudioBuffer::getChannelBuffer(int channel)
 {
     if (channel > _channelBuffers.size()) {
         channel =  _channelBuffers.size();
@@ -34,7 +51,8 @@ RingBuffer<float> *AudioBuffer::getChannelBuffer(int channel)
 }
 
 
-void AudioBuffer::writeAudioToBuffers(const char *inputBuffer, const int &bufferSize, int& nbChannels, int& formatBit)
+void AudioBuffer::writeAudioToBuffers(const char* inputBuffer, const int& bufferSize,
+                                      int& nbChannels, int& formatBit)
 {
     if (formatBit != 24 && formatBit != 16) {
         return; // format not supported
@@ -60,8 +78,15 @@ void AudioBuffer::writeAudioToBuffers(const char *inputBuffer, const int &buffer
             if (formatBit == 16) {
                 sample = decodeAudio16bit(&inputBuffer[i + c * sampleByteSize]);
             }
+#ifdef SINE_TEST
+            sample = float(sin(2.0 * 3.141592653589793 * float(SINE_FREQ) * _lastTime));
+#endif
             audioBuffers[c][s] = sample;
         }
+
+#ifdef SINE_TEST
+        _lastTime += 1.0 / float(SINE_RATE);
+#endif
         ++s;
     }
 
@@ -70,14 +95,13 @@ void AudioBuffer::writeAudioToBuffers(const char *inputBuffer, const int &buffer
     }
 }
 
-float AudioBuffer::decodeAudio24bit(const char *inputBuffer)
+float AudioBuffer::decodeAudio24bit(const char* inputBuffer)
 {
     int32_t dataSample32bit = 0;
     float dataSampleSound = 0.0;
 
     dataSample32bit = ((inputBuffer[0]) | (inputBuffer[1] << 8) | (inputBuffer[2] << 16));
-    if ((dataSample32bit & (1U << 23)) > 0) //24 bit negative value
-    {
+    if ((dataSample32bit & (1U << 23)) > 0) { //24 bit negative value
         dataSample32bit |= (0xff << 24);//get 32 bit negative value
     }
     dataSampleSound = (dataSample32bit / 8388608.0); // / 0.05;
@@ -85,7 +109,7 @@ float AudioBuffer::decodeAudio24bit(const char *inputBuffer)
     return dataSampleSound;
 }
 
-float AudioBuffer::decodeAudio16bit(const char *inputBuffer)
+float AudioBuffer::decodeAudio16bit(const char* inputBuffer)
 {
     int16_t dataSample16bit = 0;
     float dataSampleSound = 0.0;

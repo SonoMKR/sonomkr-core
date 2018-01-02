@@ -29,7 +29,7 @@ namespace sos {
     extern array<array<double,6>,NB_SOS> SOS_20kHz;
     extern array<array<double,6>,NB_SOS> SOS_ALIASING;
 
-    extern array<array<double,6>,NB_SOS> getCoefficients(int freq);
+    extern array<array<double,6>,NB_SOS> getCoefficients(int decimateRatio, int freq);
 
 }
 #endif // SOS_COEFFICIENTS_H

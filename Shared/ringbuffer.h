@@ -7,6 +7,7 @@
 #include <condition_variable>
 #include <atomic>
 #include <vector>
+#include <chrono>
 
 using namespace std;
 
@@ -21,11 +22,11 @@ struct BufferReader {
 };
 
 template <class T>
-class RingBuffer
-{
+class RingBuffer {
 private:
     shared_timed_mutex _mutex;
     condition_variable_any _notify;
+    std::chrono::milliseconds _msTimeout;
     T* _buffer;
     ulong _bufferSize;
     ulong _writePosition;
@@ -36,9 +37,9 @@ public:
     RingBuffer(const int& size);
     ~RingBuffer();
     int registerReader();
-    bool waitToBeginRead(const int &readerIndex, const uint& sizeToRead, ulong &readPosition);
-    void endRead(const int& readerIndex, const int &sizeRed);
-    void writeToBuffer(const T *inputBuffer, const int &sizeToWrite);
+    bool waitToBeginRead(const int& readerIndex, const uint& sizeToRead, ulong& readPosition);
+    void endRead(const int& readerIndex, const int& sizeRed);
+    void writeToBuffer(const T* inputBuffer, const int& sizeToWrite);
     void resetBuffer();
 
     inline T* getBufferPtr() {

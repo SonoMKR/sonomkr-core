@@ -9,15 +9,12 @@ class RingBuffer;
 using namespace std;
 
 template<class T>
-class RingBufferConsumer
-{
-private:
+class RingBufferConsumer {
+protected:
     RingBuffer<T>* _buffer;
     int _readerIndex;
-    bool _doRead;
     thread _readThread;
-
-protected:
+    bool _doRead;
     T* _bufferPtr;
     int _bufferSize;
     int _sizeToRead;
@@ -28,7 +25,7 @@ public:
     virtual ~RingBufferConsumer();
     void run();
     void start();
-    void pause();
+    void stop();
 
     void waitUntilDone();
 };

@@ -1,19 +1,18 @@
 #include "audiocapture.h"
 
-AudioCapture::AudioCapture(AudioBuffer* audioBuffer)
+AudioCapture::AudioCapture(Configuration* config, AudioBuffer* audioBuffer):
+    _config(config),
+    _audioBuffer(audioBuffer)
 {
-    _audioBuffer = audioBuffer;
+    _bitDepth = _config->getSetting(string(AUDIO_BITDEPTH_PATH));
+    _pcmName = _config->getSetting(string(AUDIO_SOUNDCARD_PATH)).c_str();
+    _sampleRate = _config->getSetting(string(AUDIO_SAMPLERATE_PATH));
+    _channels = _config->getSetting(string(AUDIO_CHANNELS_PATH));
+    _periods = _config->getSetting(string(AUDIO_PERIODS_PATH));
+    _periodsize = _config->getSetting(string(AUDIO_PERIODSIZE_PATH));
 
-    _formatBit = 16;
-    _pcmName = "hw:0,0";
-    _rate = 44100;
-
-    _samplesize = (_formatBit == 24) ? (32 / 8) : (_formatBit / 8);
-
-    _channels = 2;
+    _samplesize = (_bitDepth == 24) ? (32 / 8) : (_bitDepth / 8);
     _framesize = _channels * _samplesize;
-    _periods = 4;
-    _periodsize = 4096;
 }
 
 AudioCapture::~AudioCapture()
@@ -46,13 +45,14 @@ void AudioCapture::run()
 
     while (_doCapture) {
         while ((pcmreturn = snd_pcm_readi(_captureHandle, _periodBuf,
-                        _periodsize)) < 0) {
+                                          _periodsize)) < 0) {
             snd_pcm_prepare(_captureHandle);
             // Buffer Overrun
         }
 
         int count = _periodsize * _framesize; // number of values to write to ring buffer
-        _audioBuffer->writeAudioToBuffers(_periodBuf, count, _channels, _formatBit);
+
+        _audioBuffer->writeAudioToBuffers(_periodBuf, count, _channels, _bitDepth);
     }
     snd_pcm_close(_captureHandle);
     free(_periodBuf);
@@ -69,20 +69,20 @@ void AudioCapture::stop()
     _doCapture = false;
 }
 
-snd_pcm_t *AudioCapture::open_pcm()
+snd_pcm_t* AudioCapture::open_pcm()
 {
-    snd_pcm_t *pcm_handle;
-    snd_pcm_hw_params_t *hwparams;
+    snd_pcm_t* pcm_handle;
+    snd_pcm_hw_params_t* hwparams;
     snd_pcm_uframes_t buffersize_return;
     unsigned int tmp;
     int err;
 
     err = snd_pcm_open(&pcm_handle, _pcmName.c_str(),
-            SND_PCM_STREAM_CAPTURE, 0);
+                       SND_PCM_STREAM_CAPTURE, 0);
     if (err < 0) {
 //        ("Error opening PCM device %s (%s)", (_pcmName),
 //                snd_strerror(err));
-        return(NULL);
+        return (NULL);
     }
 
     snd_pcm_hw_params_alloca(&hwparams);
@@ -90,49 +90,51 @@ snd_pcm_t *AudioCapture::open_pcm()
     if (err < 0) {
 //        ("Can not configure this PCM device (%s).", snd_strerror(err));
         snd_pcm_close(pcm_handle);
-        return(NULL);
+        return (NULL);
     }
     err = snd_pcm_hw_params_set_access(pcm_handle, hwparams,
-                SND_PCM_ACCESS_RW_INTERLEAVED);
+                                       SND_PCM_ACCESS_RW_INTERLEAVED);
     if (err < 0) {
 //        ("Error setting access (%s).", snd_strerror(err));
         snd_pcm_close(pcm_handle);
-        return(NULL);
+        return (NULL);
     }
-    if (_formatBit == 16) {
+    if (_bitDepth == 16) {
         err = snd_pcm_hw_params_set_format(pcm_handle, hwparams,
-                    SND_PCM_FORMAT_S16_LE);
+                                           SND_PCM_FORMAT_S16_LE);
         if (err < 0) {
             snd_pcm_close(pcm_handle);
 //            ("Error setting format (%s).", snd_strerror(err));
-            return(NULL);
-        }
-    } else if (_formatBit == 24) {
-        err = snd_pcm_hw_params_set_format(pcm_handle, hwparams,
-                    SND_PCM_FORMAT_S24_LE);
-        if (err < 0) {
-            snd_pcm_close(pcm_handle);
-//            ("Error setting format (%s).", snd_strerror(err));
-            return(NULL);
-        }
-    } else {
-        err = snd_pcm_hw_params_set_format(pcm_handle, hwparams,
-                    SND_PCM_FORMAT_S32_LE);
-        if (err < 0) {
-            snd_pcm_close(pcm_handle);
-//            ("Error setting format (%s).", snd_strerror(err));
-            return(NULL);
+            return (NULL);
         }
     }
-    tmp = (unsigned int) _rate;
+    else if (_bitDepth == 24) {
+        err = snd_pcm_hw_params_set_format(pcm_handle, hwparams,
+                                           SND_PCM_FORMAT_S24_LE);
+        if (err < 0) {
+            snd_pcm_close(pcm_handle);
+//            ("Error setting format (%s).", snd_strerror(err));
+            return (NULL);
+        }
+    }
+    else {
+        err = snd_pcm_hw_params_set_format(pcm_handle, hwparams,
+                                           SND_PCM_FORMAT_S32_LE);
+        if (err < 0) {
+            snd_pcm_close(pcm_handle);
+//            ("Error setting format (%s).", snd_strerror(err));
+            return (NULL);
+        }
+    }
+    tmp = (unsigned int) _sampleRate;
     err = snd_pcm_hw_params_set_rate_near(pcm_handle, hwparams, &tmp, 0);
     if (err < 0) {
 //        ("Error setting rate (%s).", snd_strerror(err));
         snd_pcm_close(pcm_handle);
-        return(NULL);
+        return (NULL);
     }
 
-    if ((unsigned int) _rate != tmp) {
+    if ((unsigned int) _sampleRate != tmp) {
 //         Rate " << _rate << " changed to " << tmp;
     }
 
@@ -140,21 +142,21 @@ snd_pcm_t *AudioCapture::open_pcm()
     if (err < 0) {
         snd_pcm_close(pcm_handle);
 //        ("Error setting channels (%s).", snd_strerror(err));
-        return(NULL);
+        return (NULL);
     }
     err = snd_pcm_hw_params_set_periods(pcm_handle, hwparams, _periods, 0);
     if (err < 0) {
         snd_pcm_close(pcm_handle);
 //        ("Error setting periods (%s).", snd_strerror(err));
-        return(NULL);
+        return (NULL);
     }
     buffersize_return = _periodsize * _periods;
     err = snd_pcm_hw_params_set_buffer_size_near(pcm_handle, hwparams,
-                    &buffersize_return);
+            &buffersize_return);
     if (err < 0) {
 //        ("Error setting buffersize (%s).", snd_strerror(err));
         snd_pcm_close(pcm_handle);
-        return(NULL);
+        return (NULL);
     }
     if (buffersize_return != (snd_pcm_uframes_t)(_periodsize * _periods)) {
 //        ("Periodsize %d is not available on your hardware. "
@@ -166,8 +168,8 @@ snd_pcm_t *AudioCapture::open_pcm()
     if (err < 0) {
 //        ("Error setting HW params (%s).", snd_strerror(err));
         snd_pcm_close(pcm_handle);
-        return(NULL);
+        return (NULL);
     }
 
-    return(pcm_handle);
+    return (pcm_handle);
 }

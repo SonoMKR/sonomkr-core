@@ -31,7 +31,17 @@ double IirFilter::filter(double sample)
     for (int i = 0; i < _nbFilters; ++i) {
         ioSample = _filters[i].filter(ioSample);
     }
-
+//    _filters[9].filter(
+//        _filters[8].filter(
+//            _filters[7].filter(
+//                _filters[6].filter(
+//                    _filters[5].filter(
+//                        _filters[4].filter(
+//                            _filters[3].filter(
+//                                _filters[2].filter(
+//                                    _filters[1].filter(
+//                                        _filters[0].filter(ioSample)
+//                                    )))))))));
 //    int16_t intSampleOut(ioSample * 32768.0);
 //    _iirOutputSamples.write(reinterpret_cast<const char*>(&intSampleOut), sizeof(intSampleOut));
 
