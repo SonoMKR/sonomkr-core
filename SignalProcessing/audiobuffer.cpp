@@ -4,7 +4,7 @@ AudioBuffer::AudioBuffer(Configuration* config):
     _config(config)
 {
 #ifdef SINE_TEST
-    _lastTime = 0;
+    _lastTime = 0.0;
 #endif
 
     int sampleRate = _config->getSetting(string(AUDIO_SAMPLERATE_PATH));
@@ -79,7 +79,7 @@ void AudioBuffer::writeAudioToBuffers(const char* inputBuffer, const int& buffer
                 sample = decodeAudio16bit(&inputBuffer[i + c * sampleByteSize]);
             }
 #ifdef SINE_TEST
-            sample = float(sin(2.0 * 3.141592653589793 * float(SINE_FREQ) * _lastTime));
+            sample = float(SINE_GAIN * sin(2.0 * 3.141592653589793 * float(SINE_FREQ) * _lastTime));
 #endif
             audioBuffers[c][s] = sample;
         }

@@ -113,7 +113,7 @@ int SpectrumChannel::processData(ulong readPosition)
         if (!readyRead) {
             continue;
         }
-        if (leqReadPosition > _spectrumWritePosition) {
+        if (leqReadPosition != _spectrumWritePosition) {
             // leqRead and sepctrumWrite should be in sync
             // so continue and wait for the current spectrum to be filled
             // will get the next leq value next time

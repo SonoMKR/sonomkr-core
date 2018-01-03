@@ -1,8 +1,9 @@
 #ifndef AUDIOBUFFER_H
 #define AUDIOBUFFER_H
 
-//#define SINE_TEST
-#define SINE_FREQ 160.0
+#define SINE_TEST
+#define SINE_FREQ 1000.0
+#define SINE_GAIN 1.0
 #define SINE_RATE 44100.0
 
 #include <vector>
