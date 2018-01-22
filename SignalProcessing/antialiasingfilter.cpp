@@ -1,12 +1,12 @@
 #include "antialiasingfilter.h"
 
-AntiAliasingFilter::AntiAliasingFilter(
-        RingBuffer<float> *inputBuffer,
-        int sizeToRead,
-        int inputSampleRate):
+AntiAliasingFilter::AntiAliasingFilter(RingBuffer<float>* inputBuffer,
+                                       int sizeToRead,
+                                       int inputSampleRate,
+                                       Setting& filterConfig):
     RingBufferConsumer<float>(inputBuffer, sizeToRead),
     _inputSampleRate(inputSampleRate),
-    _filter(NB_SOS, sos::SOS_ALIASING),
+    _filter(filterConfig),
     _sampleCounter(0)
 {
     _ouputSampleRate = _inputSampleRate / 10;
@@ -24,12 +24,10 @@ int AntiAliasingFilter::processData(ulong readPosition)
     int sizeToWrite = 0;
     // carefull to have a _sizeToTead a multiple of 10
     float decimateBuffer[_sizeToRead/10];
-    for (int i = 0; i < _sizeToRead; i++)
-    {
+    for (int i = 0; i < _sizeToRead; i++) {
         ulong position = (readPosition + i) % _bufferSize;
         float sample = _filter.filter(_bufferPtr[position]);
-        if (_sampleCounter % 10 == 0)
-        {
+        if (_sampleCounter % 10 == 0) {
             decimateBuffer[sizeToWrite] = sample;
             sizeToWrite++;
         }

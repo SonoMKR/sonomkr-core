@@ -20,13 +20,11 @@ SOURCES += main.cpp \
     spectrumchannel.cpp \
     spectrum.cpp \
     SignalProcessing/leqfilter.cpp \
-    SignalProcessing/antialiasingfilter.cpp \
-    SignalProcessing/sos_coefficients.cpp
+    SignalProcessing/antialiasingfilter.cpp
 
 HEADERS += \
     SignalProcessing/audiocapture.h \
     SignalProcessing/biquadfilter.h \
-    SignalProcessing/sos_coefficients.h \
     SignalProcessing/iirfilter.h \
     Shared/ringbuffer.h \
     Shared/ringbufferconsumer.h \
@@ -47,4 +45,5 @@ DISTFILES += \
     Dbus/sonomkr-dbus-interface.xml \
     Dbus/fr.sonomkr.controller.xml \
     Dbus/fr.sonomkr.channel.xml \
-    sonomkr.conf
+    sonomkr.conf \
+    filters.conf

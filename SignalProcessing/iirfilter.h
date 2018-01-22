@@ -3,24 +3,25 @@
 
 //#include <fstream>
 #include <array>
+#include <libconfig.h++>
 
 #include "sos_coefficients.h"
+#include "libconfig.h++"
 
 class BiquadFilter;
 
 using namespace std;
+using namespace libconfig;
 
-class IirFilter
-{
+class IirFilter {
 private:
     int _nbFilters;
     BiquadFilter* _filters;
-//    std::ofstream _iirInputSamples;
-//    std::ofstream _iirOutputSamples;
+    //    std::ofstream _iirInputSamples;
+    //    std::ofstream _iirOutputSamples;
 
 public:
-    IirFilter(int nbFilters,
-              array<array<double,6>, NB_SOS> sosCoefficients);
+    IirFilter(Setting& filterConfig);
     ~IirFilter();
     double filter(double sample);
 };

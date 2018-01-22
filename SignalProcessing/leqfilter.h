@@ -4,16 +4,16 @@
 #include <math.h>
 #include <atomic>
 #include <iostream>
+#include <libconfig.h++>
 
 #include "../Shared/ringbuffer.h"
 #include "../Shared/ringbufferconsumer.h"
-#include "sos_coefficients.h"
 #include "iirfilter.h"
 
 using namespace std;
+using namespace libconfig;
 
-class LeqFilter: public RingBufferConsumer<float>
-{
+class LeqFilter: public RingBufferConsumer<float> {
 private:
     int _sampleRate;
     float _integrationPeriod; // in seconds
@@ -33,14 +33,12 @@ private:
     int processData(ulong readPosition);
 
 public:
-    LeqFilter(
-        RingBuffer<float> *buffer,
-        int sizeToRead,
-        int rate,
-        float integrationPeriode,
-        int nbFilters,
-        array<array<double,6>,NB_SOS> sosCoefficients
-    );
+    LeqFilter(RingBuffer<float>* buffer,
+              int sizeToRead,
+              int rate,
+              float integrationPeriode,
+              Setting& filterConfig
+             );
     ~LeqFilter();
 
     bool beginReadLeq(const int& sizeToRead, int& readPosition);

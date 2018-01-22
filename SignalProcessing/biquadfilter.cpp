@@ -5,24 +5,18 @@ BiquadFilter::BiquadFilter()
 
 }
 
-BiquadFilter::BiquadFilter(array<double, 6> coefficients):
-    _b0(coefficients[0]),
-    _b1(coefficients[1]),
-    _b2(coefficients[2]),
-    _a1(coefficients[4]),
-    _a2(coefficients[5])
+BiquadFilter::BiquadFilter(Setting& biquadConfig)
 {
-    _delay1 = 0;
-    _delay2 = 0;
+    initialize(biquadConfig);
 }
 
-void BiquadFilter::initialize(array<double, 6> coefficients)
+void BiquadFilter::initialize(Setting& biquadConfig)
 {
-    _b0 = coefficients[0];
-    _b1 = coefficients[1];
-    _b2 = coefficients[2];
-    _a1 = coefficients[4];
-    _a2 = coefficients[5];
+    _b0 = biquadConfig.lookup("b0");
+    _b1 = biquadConfig.lookup("b1");
+    _b2 = biquadConfig.lookup("b2");
+    _a1 = biquadConfig.lookup("a1");
+    _a2 = biquadConfig.lookup("a2");
 
     _delay1 = 0;
     _delay2 = 0;

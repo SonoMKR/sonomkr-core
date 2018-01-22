@@ -1,28 +1,48 @@
 #include "configuration.h"
 
-Configuration::Configuration(string filePath):
-    _filePath(filePath)
+Configuration::Configuration(string mainFilePath, string filtersFilePath):
+    _mainFilePath(mainFilePath),
+    _filtersFilePath(filtersFilePath)
 {
-    _config.readFile(_filePath.c_str());
+    _filtersConfig.readFile(_filtersFilePath.c_str());
+    _mainConfig.readFile(_mainFilePath.c_str());
     setDefault();
 }
 
-void Configuration::readFile(string filePath)
+void Configuration::readMainConfig(string filePath)
 {
-    _filePath = filePath;
-    _config.readFile(_filePath.c_str());
+    _mainFilePath = filePath;
+    _mainConfig.readFile(_mainFilePath.c_str());
     setDefault();
 }
 
 Setting& Configuration::getSetting(string path)
 {
-    Setting& setting = _config.lookup(path);
+    Setting& setting = _mainConfig.lookup(path);
+    return setting;
+}
+
+Setting& Configuration::getFilter(int sampleRate, int base, int frequency)
+{
+    string path = "RATE_" + to_string(sampleRate) +
+                  ".G" + to_string(base) +
+                  ".FREQ_" + to_string(frequency);
+    Setting& setting = _filtersConfig.lookup(path);
+    return setting;
+}
+
+Setting& Configuration::getAliasingFilter(int sampleRate, int base)
+{
+    string path = "RATE_" + to_string(sampleRate) +
+                  ".G" + to_string(base) +
+                  ".ANTI_ALIASING";
+    Setting& setting = _filtersConfig.lookup(path);
     return setting;
 }
 
 void Configuration::setDefault()
 {
-    Setting& root = _config.getRoot();
+    Setting& root = _mainConfig.getRoot();
 
     if (! root.exists("autostart")) {
         root.add("autostart", Setting::TypeBoolean) = false;
@@ -100,5 +120,5 @@ void Configuration::setDefault()
         channel2.add("publishBind", Setting::TypeString) = "tcp://*:6662";
     }
 
-    _config.writeFile(_filePath.c_str());
+    _mainConfig.writeFile(_mainFilePath.c_str());
 }

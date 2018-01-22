@@ -29,6 +29,7 @@ private:
     Configuration* _config;
     context* _zmqContext;
     socket _zmqPubSocket;
+    string _strategy;
     int _fmin, _fmax;
     int _sampleRate;
     float _integrationPeriod;
@@ -45,6 +46,8 @@ private:
     int _spectrumWritePosition;
 
     void newSpectrum(string spectrumStr);
+    void applyG10Strategy();
+    void applyG2Strategy();
 
 public:
     SpectrumChannel(Configuration* config, int channel,

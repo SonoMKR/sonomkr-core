@@ -1,14 +1,12 @@
 #include "leqfilter.h"
 
-LeqFilter::LeqFilter(
-    RingBuffer<float>* buffer,
-    int sizeToRead, int rate,
-    float integrationPeriode,
-    int nbFilters,
-    array<array<double, 6>, NB_SOS> sosCoefficients
-):
+LeqFilter::LeqFilter(RingBuffer<float>* buffer,
+                     int sizeToRead, int rate,
+                     float integrationPeriode,
+                     Setting& filterConfig
+                    ):
     RingBufferConsumer<float>(buffer, sizeToRead),
-    _filter(nbFilters, sosCoefficients),
+    _filter(filterConfig),
     _sampleRate(rate),
     _integrationPeriod(integrationPeriode),
     _accumulator(0.0),
@@ -49,7 +47,7 @@ int LeqFilter::processData(ulong readPosition)
     return _sizeToRead;
 }
 
-bool LeqFilter::beginReadLeq(const int &sizeToRead, int &readPosition)
+bool LeqFilter::beginReadLeq(const int& sizeToRead, int& readPosition)
 {
     if (_leqSizeReadable.load() < sizeToRead) {
         return false;
@@ -58,7 +56,7 @@ bool LeqFilter::beginReadLeq(const int &sizeToRead, int &readPosition)
     return true;
 }
 
-void LeqFilter::endReadLeq(const int &sizeRed)
+void LeqFilter::endReadLeq(const int& sizeRed)
 {
     _leqReaderPosition = (_leqReaderPosition + sizeRed) % _leqBufferSize;
     _leqSizeReadable.store(_leqSizeReadable.load() - sizeRed);

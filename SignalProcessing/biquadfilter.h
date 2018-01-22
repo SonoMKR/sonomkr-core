@@ -2,8 +2,10 @@
 #define BIQUADFILTER_H
 
 #include <array>
+#include <libconfig.h++>
 
 using namespace std;
+using namespace libconfig;
 
 class BiquadFilter {
 private:
@@ -18,8 +20,8 @@ private:
 
 public:
     BiquadFilter();
-    BiquadFilter(array<double, 6> coefficients);
-    void initialize(array<double, 6> coefficients);
+    BiquadFilter(Setting& biquadConfig);
+    void initialize(Setting& biquadConfig);
     void reset();
 
     double filter(double sample);

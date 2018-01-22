@@ -1,15 +1,16 @@
 #ifndef ANTIALIASINGFILTER_H
 #define ANTIALIASINGFILTER_H
 
+#include <libconfig.h++>
+
 #include "../Shared/ringbuffer.h"
 #include "../Shared/ringbufferconsumer.h"
-#include "../SignalProcessing/sos_coefficients.h"
 #include "iirfilter.h"
 
 using namespace std;
+using namespace libconfig;
 
-class AntiAliasingFilter: public RingBufferConsumer<float>
-{
+class AntiAliasingFilter: public RingBufferConsumer<float> {
 private:
     int _inputSampleRate;
     int _ouputSampleRate;
@@ -23,9 +24,10 @@ private:
     int processData(ulong readPosition);
 
 public:
-    AntiAliasingFilter(RingBuffer<float> *inputBuffer,
-            int sizeToRead,
-            int inputSampleRate);
+    AntiAliasingFilter(RingBuffer<float>* inputBuffer,
+                       int sizeToRead,
+                       int inputSampleRate,
+                       Setting& filterConfig);
     ~AntiAliasingFilter();
 
     RingBuffer<float>* getOutputBuffer() {

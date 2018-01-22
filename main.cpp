@@ -11,11 +11,12 @@ using namespace std;
 
 int main()
 {
-    string path = "./sonomkr.conf";
+    string mainConfig = "./sonomkr.conf";
+    string filtersConfig = "./filters.conf";
 
     // Read the file. If there is an error, report it and exit.
     try {
-        Configuration config(path);
+        Configuration config(mainConfig, filtersConfig);
         zmqpp::context context;
 
         MainController* controller = new MainController(&config, &context);
