@@ -3,8 +3,8 @@
 
 #include <libconfig.h++>
 
-#include "../Shared/ringbuffer.h"
-#include "../Shared/ringbufferconsumer.h"
+#include "ringbuffer.h"
+#include "ringbufferconsumer.h"
 #include "iirfilter.h"
 
 using namespace std;

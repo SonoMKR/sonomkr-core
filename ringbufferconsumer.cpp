@@ -21,7 +21,7 @@ RingBufferConsumer<T>::~RingBufferConsumer<T>()
 template<class T>
 void RingBufferConsumer<T>::run()
 {
-    cout << "begin thread : " << this << endl;
+//    cout << "begin thread : " << this << endl;
     int sizeRed = 0;
     unsigned long readPosition = 0;
 
@@ -37,7 +37,7 @@ void RingBufferConsumer<T>::run()
             _buffer->endRead(_readerIndex, sizeRed);
         }
     }
-    cout << "end thread : " << this << endl;
+//    cout << "end thread : " << this << endl;
 }
 
 template<class T>

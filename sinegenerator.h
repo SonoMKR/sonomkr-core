@@ -7,10 +7,9 @@
 #include <string>
 #include <math.h>
 #include <unistd.h>
-#include "../Shared/ringbuffer.h"
+#include "ringbuffer.h"
 
-class SineGenerator
-{
+class SineGenerator {
 private:
     RingBuffer<float>* _audioBuffer;
     thread _generatorThread;

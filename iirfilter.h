@@ -5,7 +5,6 @@
 #include <array>
 #include <libconfig.h++>
 
-#include "sos_coefficients.h"
 #include "libconfig.h++"
 
 class BiquadFilter;

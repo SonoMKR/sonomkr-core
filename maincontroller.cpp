@@ -1,9 +1,9 @@
 #include "maincontroller.h"
 
-#include "SignalProcessing/leqfilter.h"
-#include "SignalProcessing/audiobuffer.h"
-#include "SignalProcessing/audiocapture.h"
-#include "SignalProcessing/sinegenerator.h"
+#include "leqfilter.h"
+#include "audiobuffer.h"
+#include "audiocapture.h"
+#include "sinegenerator.h"
 #include "spectrumchannel.h"
 #include "configuration.h"
 

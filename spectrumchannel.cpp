@@ -1,7 +1,4 @@
 #include "spectrumchannel.h"
-#include "defines.h"
-
-#include "SignalProcessing/sos_coefficients.h"
 
 SpectrumChannel::SpectrumChannel(Configuration* config, int channel,
                                  RingBuffer<float>* inputBuffer, int sizeToRead,
@@ -87,7 +84,8 @@ int SpectrumChannel::processData(ulong readPosition)
 
 void SpectrumChannel::newSpectrum(string spectrumStr)
 {
-//    cout << spectrumStr << endl;
+    // send topic in first part of the message
+    _zmqPubSocket.send("LEQ", socket::send_more);
     _zmqPubSocket.send(spectrumStr);
 }
 

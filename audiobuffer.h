@@ -9,8 +9,8 @@
 #include <vector>
 #include <math.h>
 
-#include "../Shared/ringbuffer.h"
-#include "../configuration.h"
+#include "ringbuffer.h"
+#include "configuration.h"
 
 class AudioBuffer {
 private:

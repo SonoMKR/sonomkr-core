@@ -7,11 +7,11 @@
 #include <zmqpp/zmqpp.hpp>
 
 #include "configuration.h"
-#include "SignalProcessing/audiobuffer.h"
-#include "SignalProcessing/leqfilter.h"
-#include "SignalProcessing/antialiasingfilter.h"
-#include "Shared/ringbuffer.h"
-#include "Shared/ringbufferconsumer.h"
+#include "audiobuffer.h"
+#include "leqfilter.h"
+#include "antialiasingfilter.h"
+#include "ringbuffer.h"
+#include "ringbufferconsumer.h"
 #include "spectrum.h"
 #include "defines.h"
 

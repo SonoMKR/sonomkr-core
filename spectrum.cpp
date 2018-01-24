@@ -75,8 +75,8 @@ string Spectrum::toString()
     ss << setfill('0') << setw(3) << milliseconds << ";";
     ss.precision(2);
     ss << fixed;
-    ss << "A" << ":";
-    ss << _globals[GLOBAL_LAeq] << ";";
+//    ss << "A" << ":";
+//    ss << _globals[GLOBAL_LAeq] << ";";
     for (int freq = _lowerFreq; freq <= _higherFreq; freq++) {
         ss << freq << ":";
         ss << _leqs[freq] << ";";
