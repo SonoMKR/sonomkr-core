@@ -30,8 +30,6 @@ HEADERS += \
     Shared/ringbufferconsumer.h \
     SignalProcessing/audiobuffer.h \
     defines.h \
-    Dbus/Adaptors/controller.h \
-    Dbus/Adaptors/channel.h \
     SignalProcessing/sinegenerator.h \
     maincontroller.h \
     configuration.h \
@@ -42,8 +40,5 @@ HEADERS += \
     Shared/dbus_vtable.hpp
 
 DISTFILES += \
-    Dbus/sonomkr-dbus-interface.xml \
-    Dbus/fr.sonomkr.controller.xml \
-    Dbus/fr.sonomkr.channel.xml \
     sonomkr.conf \
     filters.conf
