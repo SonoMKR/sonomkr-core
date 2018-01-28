@@ -40,4 +40,5 @@ HEADERS += \
 
 DISTFILES += \
     sonomkr.conf \
-    filters.conf
+    filters.conf \
+    Makefile.am

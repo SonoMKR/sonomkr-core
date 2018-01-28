@@ -19,9 +19,9 @@ private:
     int _sampleCounter;
 
     RingBuffer<float>* _outputBuffer;
-    ulong _outputBufferSize;
+    unsigned long _outputBufferSize;
 
-    int processData(ulong readPosition);
+    int processData(unsigned long readPosition);
 
 public:
     AntiAliasingFilter(RingBuffer<float>* inputBuffer,
@@ -33,7 +33,7 @@ public:
     RingBuffer<float>* getOutputBuffer() {
         return _outputBuffer;
     }
-    ulong getOutputBufferSize() {
+    unsigned long getOutputBufferSize() {
         return _outputBufferSize;
     }
 };

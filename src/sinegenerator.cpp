@@ -1,7 +1,7 @@
 #include "sinegenerator.h"
 
 
-SineGenerator::SineGenerator(float freq, ulong size):
+SineGenerator::SineGenerator(float freq, unsigned long size):
     _freq(freq)
 {
 

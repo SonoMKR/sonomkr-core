@@ -15,7 +15,7 @@
 class AudioBuffer {
 private:
     Configuration* _config;
-    ulong _bufferSize;
+    unsigned long _bufferSize;
     int _nbChannels;
     vector<RingBuffer<float>*> _channelBuffers;
 

@@ -19,13 +19,13 @@ AntiAliasingFilter::~AntiAliasingFilter()
     delete _outputBuffer;
 }
 
-int AntiAliasingFilter::processData(ulong readPosition)
+int AntiAliasingFilter::processData(unsigned long readPosition)
 {
     int sizeToWrite = 0;
     // carefull to have a _sizeToTead a multiple of 10
     float decimateBuffer[_sizeToRead/10];
     for (int i = 0; i < _sizeToRead; i++) {
-        ulong position = (readPosition + i) % _bufferSize;
+        unsigned long position = (readPosition + i) % _bufferSize;
         float sample = _filter.filter(_bufferPtr[position]);
         if (_sampleCounter % 10 == 0) {
             decimateBuffer[sizeToWrite] = sample;

@@ -19,7 +19,7 @@ private:
     float* _periodBuf;
 
 public:
-    SineGenerator(float freq, ulong size);
+    SineGenerator(float freq, unsigned long size);
     ~SineGenerator();
     void run();
     void start();

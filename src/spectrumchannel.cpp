@@ -49,7 +49,7 @@ SpectrumChannel::~SpectrumChannel()
 }
 
 
-int SpectrumChannel::processData(ulong readPosition)
+int SpectrumChannel::processData(unsigned long readPosition)
 {
     // readPosition is ignored, we only use it to sync on the audio thread
     for (int i = 0; i < _leqs.size(); i++) {

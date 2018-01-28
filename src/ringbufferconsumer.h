@@ -18,7 +18,7 @@ protected:
     T* _bufferPtr;
     int _bufferSize;
     int _sizeToRead;
-    virtual int processData(ulong readPosition) = 0;
+    virtual int processData(unsigned long readPosition) = 0;
 
 public:
     RingBufferConsumer(RingBuffer<T>* buffer, int sizeToRead);

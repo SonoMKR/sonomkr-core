@@ -23,8 +23,8 @@ int RingBuffer<T>::registerReader()
 }
 
 template<class T>
-bool RingBuffer<T>::waitToBeginRead(const int& readerIndex, const uint& sizeToRead,
-                                    ulong& readPosition)
+bool RingBuffer<T>::waitToBeginRead(const int& readerIndex, const unsigned int& sizeToRead,
+                                    unsigned long& readPosition)
 {
     if (_readersList[readerIndex]->sizeReadable.load() < sizeToRead) {
         shared_lock<shared_timed_mutex> lock(_mutex);
@@ -57,7 +57,7 @@ void RingBuffer<T>::writeToBuffer(const T* inputBuffer, const int& sizeToWrite)
 
     _writePosition = (_writePosition + sizeToWrite) % _bufferSize;
 
-    for (uint i = 0; i < _readersList.size(); ++i) {
+    for (unsigned int i = 0; i < _readersList.size(); ++i) {
         _readersList[i]->sizeReadable += sizeToWrite;
     }
 
@@ -69,7 +69,7 @@ void RingBuffer<T>::resetBuffer()
 {
     _writePosition = 0;
 
-    for (uint i = 0; i <  _readersList.size(); ++i) {
+    for (unsigned int i = 0; i <  _readersList.size(); ++i) {
         _readersList[i]->sizeReadable = 0;
         _readersList[i]->readPosition = 0;
     }

@@ -12,10 +12,10 @@
 using namespace std;
 
 struct BufferReader {
-    ulong readPosition;
-    atomic<uint> sizeReadable;
+    unsigned long readPosition;
+    atomic<unsigned int> sizeReadable;
 
-    BufferReader(ulong startPosition) {
+    BufferReader(unsigned long startPosition) {
         readPosition = startPosition;
         sizeReadable = 0;
     }
@@ -28,8 +28,8 @@ private:
     condition_variable_any _notify;
     std::chrono::milliseconds _msTimeout;
     T* _buffer;
-    ulong _bufferSize;
-    ulong _writePosition;
+    unsigned long _bufferSize;
+    unsigned long _writePosition;
 
     vector<BufferReader*> _readersList;
 
@@ -37,7 +37,8 @@ public:
     RingBuffer(const int& size);
     ~RingBuffer();
     int registerReader();
-    bool waitToBeginRead(const int& readerIndex, const uint& sizeToRead, ulong& readPosition);
+    bool waitToBeginRead(const int& readerIndex, const unsigned int& sizeToRead,
+                         unsigned long& readPosition);
     void endRead(const int& readerIndex, const int& sizeRed);
     void writeToBuffer(const T* inputBuffer, const int& sizeToWrite);
     void resetBuffer();
@@ -45,7 +46,7 @@ public:
     inline T* getBufferPtr() {
         return _buffer;
     }
-    inline ulong getBufferSize() {
+    inline unsigned long getBufferSize() {
         return _bufferSize;
     }
 };

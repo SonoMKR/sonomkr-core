@@ -37,7 +37,7 @@ private:
     vector<Leq> _leqs;
     vector<AntiAliasingFilter*> _aliasingFilters;
 
-    int processData(ulong readPosition);
+    int processData(unsigned long readPosition);
 
     system_clock::time_point _lastTime;
     int _lastMilliseconds;

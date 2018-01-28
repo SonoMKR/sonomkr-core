@@ -26,7 +26,7 @@ LeqFilter::~LeqFilter()
     delete[] _leqBuffer;
 }
 
-int LeqFilter::processData(ulong readPosition)
+int LeqFilter::processData(unsigned long readPosition)
 {
     double sample;
     for (int i = 0; i < _sizeToRead; ++i) {

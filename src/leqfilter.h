@@ -18,7 +18,7 @@ private:
     int _sampleRate;
     float _integrationPeriod; // in seconds
     int _resetPeriod; // in samples
-    uint _readCounter;
+    unsigned int _readCounter;
     float _accumulator;
 
     IirFilter _filter;
@@ -30,7 +30,7 @@ private:
     int _leqWritePosition;
     atomic<int> _leqSizeReadable;
 
-    int processData(ulong readPosition);
+    int processData(unsigned long readPosition);
 
 public:
     LeqFilter(RingBuffer<float>* buffer,
