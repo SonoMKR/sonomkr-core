@@ -33,45 +33,7 @@
 
 #qt stuff
 *.pro.user
+CMakeLists.txt.user
 
-#autotools stuff
-	
-
-/autom4te.cache/
-/config/
-Makefile
-Makefile.in
-aclocal.m4
-app.info
-compile
-config.h
-config.h.in
-config.log
-config.status
-configure
-configure.scan
-coverage_report
-depcomp
-install-sh
-libtool
-m4
-missing
-stamp-h1
-*~
-*.html
-*.log
-*.o
-*.la
-*.so*
-*.a
-.deps
-*.tar*
-*.zip
-*.lo
-*.gcno
-*.gcda
-zsh:1: command not found: :wq
-builds/
-config.guess
-config.sub
-
+build/
+.vscode
