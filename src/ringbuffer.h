@@ -2,55 +2,54 @@
 #define RINGBUFFER_H
 
 #include <iostream>
-
 #include <shared_mutex>
 #include <condition_variable>
 #include <atomic>
 #include <vector>
 #include <chrono>
 
-using namespace std;
+struct BufferReader
+{
+    unsigned long read_position;
+    std::atomic<unsigned int> size_readable;
 
-struct BufferReader {
-    unsigned long readPosition;
-    atomic<unsigned int> sizeReadable;
-
-    BufferReader(unsigned long startPosition) {
-        readPosition = startPosition;
-        sizeReadable = 0;
+    BufferReader(unsigned long start_position) :
+        read_position(start_position),
+        size_readable(0)
+    {
     }
 };
 
-template <class T>
-class RingBuffer {
-private:
-    shared_timed_mutex _mutex;
-    condition_variable_any _notify;
-    std::chrono::milliseconds _msTimeout;
-    T* _buffer;
-    unsigned long _bufferSize;
-    unsigned long _writePosition;
+class RingBuffer
+{
+  private:
+    std::shared_timed_mutex mutex_;
+    std::condition_variable_any notify_;
+    std::chrono::milliseconds ms_timeout_;
+    float *buffer_;
+    unsigned long buffer_size_;
+    unsigned long write_position_;
 
-    vector<BufferReader*> _readersList;
+    std::vector<BufferReader *> readers_list_;
 
-public:
-    RingBuffer(const int& size);
+  public:
+    RingBuffer(const int &size);
     ~RingBuffer();
     int registerReader();
-    bool waitToBeginRead(const int& readerIndex, const unsigned int& sizeToRead,
-                         unsigned long& readPosition);
-    void endRead(const int& readerIndex, const int& sizeRed);
-    void writeToBuffer(const T* inputBuffer, const int& sizeToWrite);
+    bool waitToBeginRead(const int &reader_index, const unsigned int &size_to_read,
+                         unsigned long &read_position);
+    void endRead(const int &reader_index, const int &size_red);
+    void writeToBuffer(const float *input_buffer, const int &size_to_write);
     void resetBuffer();
 
-    inline T* getBufferPtr() {
-        return _buffer;
+    inline float *getBufferPtr()
+    {
+        return buffer_;
     }
-    inline unsigned long getBufferSize() {
-        return _bufferSize;
+    inline unsigned long getBufferSize()
+    {
+        return buffer_size_;
     }
 };
-
-template class RingBuffer<float>;
 
 #endif // RINGBUFFER_H

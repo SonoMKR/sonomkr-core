@@ -1,76 +1,74 @@
 #include "ringbuffer.h"
 
-template<class T>
-RingBuffer<T>::RingBuffer(const int& size):
-    _bufferSize(size),
-    _msTimeout(100)
+RingBuffer::RingBuffer(const int &size) :
+    buffer_size_(size),
+    ms_timeout_(100),
+    write_position_(0)
 {
-    _buffer = new T[_bufferSize];
-    _writePosition = 0;
+    buffer_ = new float[buffer_size_];
 }
 
-template<class T>
-RingBuffer<T>::~RingBuffer()
+RingBuffer::~RingBuffer()
 {
-    delete[] _buffer;
+    delete[] buffer_;
 }
 
-template<class T>
-int RingBuffer<T>::registerReader()
+int RingBuffer::registerReader()
 {
-    _readersList.push_back(new BufferReader(_writePosition));
-    return _readersList.size() - 1;
+    readers_list_.push_back(new BufferReader(write_position_));
+    return readers_list_.size() - 1;
 }
 
-template<class T>
-bool RingBuffer<T>::waitToBeginRead(const int& readerIndex, const unsigned int& sizeToRead,
-                                    unsigned long& readPosition)
+bool RingBuffer::waitToBeginRead(const int &readerIndex, const unsigned int &sizeToRead,
+                                 unsigned long &read_position)
 {
-    if (_readersList[readerIndex]->sizeReadable.load() < sizeToRead) {
-        shared_lock<shared_timed_mutex> lock(_mutex);
-        _notify.wait_until(lock, chrono::system_clock::now() + _msTimeout);
+    if (readers_list_[readerIndex]->size_readable.load() < sizeToRead)
+    {
+        std::shared_lock<std::shared_timed_mutex> lock(mutex_);
+        notify_.wait_until(lock, std::chrono::system_clock::now() + ms_timeout_);
         lock.unlock();
-        if (_readersList[readerIndex]->sizeReadable.load() < sizeToRead) {
+        if (readers_list_[readerIndex]->size_readable.load() < sizeToRead)
+        {
             // handle spurious wakeup & timeout
             return false;
         }
     }
 
-    readPosition = _readersList[readerIndex]->readPosition;
+    read_position = readers_list_[readerIndex]->read_position;
     return true;
 }
 
-template<class T>
-void RingBuffer<T>::endRead(const int& readerIndex, const int& sizeRed)
+void RingBuffer::endRead(const int &readerIndex, const int &sizeRed)
 {
-    _readersList[readerIndex]->sizeReadable -= sizeRed;
-    _readersList[readerIndex]->readPosition = (_readersList[readerIndex]->readPosition + sizeRed) %
-            _bufferSize;
+    readers_list_[readerIndex]->size_readable -= sizeRed;
+    readers_list_[readerIndex]->read_position = (readers_list_[readerIndex]->read_position + sizeRed) %
+                                                buffer_size_;
 }
 
-template<class T>
-void RingBuffer<T>::writeToBuffer(const T* inputBuffer, const int& sizeToWrite)
+void RingBuffer::writeToBuffer(const float *inputBuffer, const int &sizeToWrite)
 {
-    for (int i =0; i < sizeToWrite; ++i) {
-        _buffer[(i + _writePosition) % _bufferSize] = inputBuffer[i];
+    for (int i = 0; i < sizeToWrite; ++i)
+    {
+        buffer_[(i + write_position_) % buffer_size_] = inputBuffer[i];
     }
 
-    _writePosition = (_writePosition + sizeToWrite) % _bufferSize;
+    write_position_ = (write_position_ + sizeToWrite) % buffer_size_;
 
-    for (unsigned int i = 0; i < _readersList.size(); ++i) {
-        _readersList[i]->sizeReadable += sizeToWrite;
+    for (unsigned int i = 0; i < readers_list_.size(); ++i)
+    {
+        readers_list_[i]->size_readable += sizeToWrite;
     }
 
-    _notify.notify_all();
+    notify_.notify_all();
 }
 
-template<class T>
-void RingBuffer<T>::resetBuffer()
+void RingBuffer::resetBuffer()
 {
-    _writePosition = 0;
+    write_position_ = 0;
 
-    for (unsigned int i = 0; i <  _readersList.size(); ++i) {
-        _readersList[i]->sizeReadable = 0;
-        _readersList[i]->readPosition = 0;
+    for (unsigned int i = 0; i < readers_list_.size(); ++i)
+    {
+        readers_list_[i]->size_readable = 0;
+        readers_list_[i]->read_position = 0;
     }
 }

@@ -4,24 +4,22 @@
 #include <array>
 #include <libconfig.h++>
 
-using namespace std;
-using namespace libconfig;
+class BiquadFilter
+{
+  private:
+    double b0;
+    double b1_;
+    double b2_;
+    double a1_;
+    double a2_;
 
-class BiquadFilter {
-private:
-    double _b0;
-    double _b1;
-    double _b2;
-    double _a1;
-    double _a2;
+    double delay1_;
+    double delay2_;
 
-    double _delay1;
-    double _delay2;
-
-public:
+  public:
     BiquadFilter();
-    BiquadFilter(Setting& biquadConfig);
-    void initialize(Setting& biquadConfig);
+    BiquadFilter(libconfig::Setting &biquad_config);
+    void initialize(libconfig::Setting &biquad_config);
     void reset();
 
     double filter(double sample);
