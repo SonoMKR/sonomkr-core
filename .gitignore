@@ -37,3 +37,8 @@ CMakeLists.txt.user
 
 build/
 .vscode
+
+CMakeCache.txt
+CMakeFiles/
+Makefile
+cmake_install.cmake
