@@ -23,7 +23,7 @@ class AntiAliasingFilter : public RingBufferConsumer
     AntiAliasingFilter(RingBuffer *input_buffer,
                        int size_to_read,
                        int input_sample_rate,
-                       Setting &filter_config);
+                       libconfig::Setting &filter_config);
     ~AntiAliasingFilter();
 
     RingBuffer *getOutputBuffer()

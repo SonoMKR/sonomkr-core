@@ -1,14 +1,15 @@
 #include "audiocapture.h"
 
-AudioCapture::AudioCapture(Configuration *config, AudioBuffer *audio_buffer) : config_(config),
-                                                                               audio_buffer_(audio_buffer)
+AudioCapture::AudioCapture(Configuration *config, AudioBuffer *audio_buffer) :
+    config_(config),
+    audio_buffer_(audio_buffer)
 {
-    bit_depth_ = config_->getSetting(string(AUDIO_BITDEPTH_PATH));
-    pcm_name_ = config_->getSetting(string(AUDIO_SOUNDCARD_PATH)).c_str();
-    sample_rate_ = config_->getSetting(string(AUDIO_SAMPLERATE_PATH));
-    channels_ = config_->getSetting(string(AUDIO_CHANNELS_PATH));
-    periods_ = config_->getSetting(string(AUDIO_PERIODS_PATH));
-    period_size_ = config_->getSetting(string(AUDIO_PERIODSIZE_PATH));
+    bit_depth_ = config_->getSetting(std::string(AUDIO_BITDEPTH_PATH));
+    pcm_name_ = config_->getSetting(std::string(AUDIO_SOUNDCARD_PATH)).c_str();
+    sample_rate_ = config_->getSetting(std::string(AUDIO_SAMPLERATE_PATH));
+    channels_ = config_->getSetting(std::string(AUDIO_CHANNELS_PATH));
+    periods_ = config_->getSetting(std::string(AUDIO_PERIODS_PATH));
+    period_size_ = config_->getSetting(std::string(AUDIO_PERIODSIZE_PATH));
 
     sample_size_ = (bit_depth_ == 24) ? (32 / 8) : (bit_depth_ / 8);
     frame_size_ = channels_ * sample_size_;
@@ -64,7 +65,7 @@ void AudioCapture::run()
 void AudioCapture::start()
 {
     do_capture_ = true;
-    capture_thread_ = thread(&AudioCapture::run, this);
+    capture_thread_ = std::thread(&AudioCapture::run, this);
 }
 
 void AudioCapture::stop()

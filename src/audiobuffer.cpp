@@ -6,11 +6,11 @@ AudioBuffer::AudioBuffer(Configuration *config) : config_(config)
     _lastTime = 0.0;
 #endif
 
-    int sample_rate = config_->getSetting(string(AUDIO_SAMPLERATE_PATH));
+    int sample_rate = config_->getSetting(std::string(AUDIO_SAMPLERATE_PATH));
     buffer_size_ = sample_rate * 30;
 
-    bool is_ch1_active = config_->getSetting(string(CH1_ACTIVE_PATH));
-    bool is_ch2_active = config_->getSetting(string(CH2_ACTIVE_PATH));
+    bool is_ch1_active = config_->getSetting(std::string(CH1_ACTIVE_PATH));
+    bool is_ch2_active = config_->getSetting(std::string(CH2_ACTIVE_PATH));
     nb_channels_ = 0;
     if (is_ch1_active)
     {
@@ -68,9 +68,9 @@ void AudioBuffer::writeAudioToBuffers(const char *input_buffer, const int &buffe
 
     int sample_byte_size = (format_bit == 24) ? (32 / 8) : (format_bit / 8);
     int frame_byte_size = nb_channels * sample_byte_size;
-    int nbSamples = buffer_size / frame_byte_size;
+    int nb_samples = buffer_size / frame_byte_size;
 
-    float audio_buffers[nb_channels_][nbSamples];
+    float audio_buffers[nb_channels_][nb_samples];
 
     int s = 0;
 
@@ -101,7 +101,7 @@ void AudioBuffer::writeAudioToBuffers(const char *input_buffer, const int &buffe
 
     for (int c = 0; c < nb_channels_; ++c)
     {
-        channel_buffers_[c]->writeToBuffer(audio_buffers[c], nbSamples);
+        channel_buffers_[c]->writeToBuffer(audio_buffers[c], nb_samples);
     }
 }
 

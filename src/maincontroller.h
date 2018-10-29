@@ -1,35 +1,34 @@
 #ifndef MAINCONTROLLER_H
 #define MAINCONTROLLER_H
 
-#include <vector>
 #include <thread>
 #include <zmqpp/zmqpp.hpp>
-#include <iostream>
 
-class Configuration;
-class SpectrumChannel;
-class AudioBuffer;
-class AudioCapture;
+#include "configuration.h"
+#include "spectrumchannel.h"
+#include "audiobuffer.h"
+#include "audiocapture.h"
 
-using namespace std;
-using namespace zmqpp;
+class MainController
+{
+  private:
+    bool do_run_;
+    std::thread run_thread_;
 
-class MainController {
-private:
-    bool _doRun;
-    thread _runThread;
-    bool _isCh1Active;
-    bool _isCh2Active;
-    Configuration* _config;
-    AudioBuffer* _audioBuffer;
-    AudioCapture* _audioCapture;
-    context* _zmqContext;
-    socket _zmqReqSocket;
-    SpectrumChannel* _channel1 = nullptr;
-    SpectrumChannel* _channel2 = nullptr;
+    Configuration *config_;
+    AudioBuffer *audio_buffer_;
+    AudioCapture *audio_capture_;
 
-public:
-    MainController(Configuration* config, context* zmq);
+    bool is_ch1_active_;
+    bool is_ch2_active_;
+    SpectrumChannel *channel1_ = nullptr;
+    SpectrumChannel *channel2_ = nullptr;
+
+    zmqpp::context *zmq_context_;
+    zmqpp::socket zmq_req_socket_;
+
+  public:
+    MainController(Configuration *config, zmqpp::context *zmq);
     ~MainController();
     void startChannels();
     void startChannel(int channel);

@@ -20,52 +20,49 @@ struct Leq {
     LeqFilter* filter;
 };
 
-using namespace std;
-using namespace std::chrono;
-using namespace zmqpp;
-
-class SpectrumChannel : public RingBufferConsumer<float> {
+class SpectrumChannel : public RingBufferConsumer
+{
 private:
-    Configuration* _config;
-    context* _zmqContext;
-    socket _zmqPubSocket;
-    string _strategy;
-    int _fmin, _fmax;
-    int _sampleRate;
-    float _integrationPeriod;
-    RingBuffer<float>* _inputBuffer;
-    vector<Leq> _leqs;
-    vector<AntiAliasingFilter*> _aliasingFilters;
-
+    Configuration* config_;
+    std::string strategy_;
+    int fmin_, fmax_;
+    int sample_rate_;
+    float integration_period_;
+    RingBuffer* input_buffer_;
+    std::vector<Leq> leqs_;
+    std::vector<AntiAliasingFilter*> _aliasingFilters;
+    
     int processData(unsigned long readPosition);
 
-    system_clock::time_point _lastTime;
-    int _lastMilliseconds;
-    Spectrum* _spectrumBuffer;
-    int _spectrumBufferSize;
-    int _spectrumWritePosition;
+    std::chrono::system_clock::time_point last_time_;
+    Spectrum* spectrum_buffer_;
+    int spectrum_buffer_size_;
+    int spectrum_write_position_;
 
-    void newSpectrum(string spectrumStr);
+    zmqpp::context *zmq_context_;
+    zmqpp::socket zmq_pub_socket_;
+
+    void newSpectrum(std::string spectrumStr);
     void applyG10Strategy();
     void applyG2Strategy();
 
 public:
     SpectrumChannel(Configuration* config, int channel,
-                    RingBuffer<float>* inputBuffer, int sizeToRead,
-                    context* zmqContext);
+                    RingBuffer* input_buffer, int sizeToRead,
+                    zmqpp::context* zmq_context);
     ~SpectrumChannel();
     void run();
     void start();
     void stop();
 
-    int getMinFreq() {
-        return _fmin;
+    inline int getMinFreq() {
+        return fmin_;
     }
-    int getMaxFreq() {
-        return _fmax;
+    inline int getMaxFreq() {
+        return fmax_;
     }
-    bool isActive() {
-        return _doRead;
+    inline bool isActive() {
+        return do_read_;
     }
 };
 

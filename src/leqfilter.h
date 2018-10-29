@@ -10,42 +10,40 @@
 #include "ringbufferconsumer.h"
 #include "iirfilter.h"
 
-using namespace std;
-using namespace libconfig;
+class LeqFilter : public RingBufferConsumer
+{
+  private:
+    int sample_rate_;
+    float integration_period_; // in seconds
+    int reset_period_;         // in samples
+    unsigned int read_counter_;
+    float accumulator_;
 
-class LeqFilter: public RingBufferConsumer<float> {
-private:
-    int _sampleRate;
-    float _integrationPeriod; // in seconds
-    int _resetPeriod; // in samples
-    unsigned int _readCounter;
-    float _accumulator;
-
-    IirFilter _filter;
-    float* _leqBuffer;
-    int _leqBufferSize;
+    IirFilter filter_;
+    float *leq_buffer_;
+    int leq_buffer_size_;
 
     //only one reader
-    int _leqReaderPosition;
-    int _leqWritePosition;
-    atomic<int> _leqSizeReadable;
+    int leq_reader_position_;
+    int leq_write_position_;
+    std::atomic<int> leq_size_readable_;
 
-    int processData(unsigned long readPosition);
+    int processData(unsigned long read_position);
 
-public:
-    LeqFilter(RingBuffer<float>* buffer,
-              int sizeToRead,
+  public:
+    LeqFilter(RingBuffer *buffer,
+              int size_to_read,
               int rate,
-              float integrationPeriode,
-              Setting& filterConfig
-             );
+              float integration_periode,
+              libconfig::Setting &filter_config);
     ~LeqFilter();
 
-    bool beginReadLeq(const int& sizeToRead, int& readPosition);
-    void endReadLeq(const int& sizeRed);
+    bool beginReadLeq(const int &size_to_read, int &read_position);
+    void endReadLeq(const int &size_red);
 
-    float* getLeqBuffer() {
-        return _leqBuffer;
+    inline float *getLeqBuffer()
+    {
+        return leq_buffer_;
     }
 };
 

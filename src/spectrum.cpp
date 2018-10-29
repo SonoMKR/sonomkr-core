@@ -1,55 +1,58 @@
 #include "spectrum.h"
 
-Spectrum::Spectrum()
+Spectrum::Spectrum() :
+    nb_freq_(0),
+    valid_count_(0)
 {
-    _nbFreq = 0;
-    _validCount = 0;
 }
 
-Spectrum::Spectrum(int lowerFreq, int highFreq, system_clock::time_point time)
+Spectrum::Spectrum(int lower_freq, int higher_freq, std::chrono::system_clock::time_point time)
 {
-    reset(lowerFreq, highFreq, time);
+    reset(lower_freq, higher_freq, time);
 }
 
-void Spectrum::reset(int lowerFreq, int highFreq, system_clock::time_point time)
+void Spectrum::reset(int lower_freq, int higher_freq, std::chrono::system_clock::time_point time)
 {
-    _lowerFreq = lowerFreq;
-    _higherFreq = highFreq;
-    _time = time;
+    lower_freq_ = lower_freq;
+    higher_freq_ = higher_freq;
+    time_ = time;
 
-    _nbFreq = _higherFreq - _lowerFreq + 1;
-    _validCount = 0;
+    nb_freq_ = higher_freq_ - lower_freq_ + 1;
+    valid_count_ = 0;
 
-    _leqs.clear();
-    _globals.clear();
+    leqs_.clear();
+    globals_.clear();
 
-    for (int freq = _lowerFreq; freq <= _higherFreq; freq++) {
-        _leqs[freq] = -99.0;
+    for (int freq = lower_freq_; freq <= higher_freq_; freq++)
+    {
+        leqs_[freq] = -99.0;
     }
-    _globals[GLOBAL_LAeq] = -99.0;
+    globals_[GLOBAL_LAeq] = -99.0;
 }
 
 void Spectrum::setLeq(int freq, float value)
 {
-    if (_leqs[freq] == -99.0) {
-        _validCount++;
+    if (leqs_[freq] == -99.0)
+    {
+        valid_count_++;
     }
-    _leqs[freq] = value;
+    leqs_[freq] = value;
 }
 
 void Spectrum::setGlobal(int global, float value)
 {
-    _globals[global] = value;
+    globals_[global] = value;
 }
 
-void Spectrum::setTime(system_clock::time_point time)
+void Spectrum::setTime(std::chrono::system_clock::time_point time)
 {
-    _time = time;
+    time_ = time;
 }
 
 bool Spectrum::isFull()
 {
-    if (_validCount >= _nbFreq) {
+    if (valid_count_ >= nb_freq_)
+    {
         return true;
     }
     return false;
@@ -58,28 +61,30 @@ bool Spectrum::isFull()
 void Spectrum::calculateGlobals()
 {
     float tempSumA = 0.0;
-    for (int freq =  _lowerFreq; freq <= _higherFreq; freq++) {
-        tempSumA += exp10((_leqs[freq] + spectrum::AWeight[freq]) / 10);
+    for (int freq = lower_freq_; freq <= higher_freq_; freq++)
+    {
+        tempSumA += exp10((leqs_[freq] + spectrum::AWeight[freq]) / 10);
     }
-    _globals[GLOBAL_LAeq] = 10 * log10(tempSumA);
+    globals_[GLOBAL_LAeq] = 10 * log10(tempSumA);
 }
 
-string Spectrum::toString()
+std::string Spectrum::toString()
 {
-    stringstream ss;
-    milliseconds ms = duration_cast<milliseconds>(_time.time_since_epoch());
-    seconds s = duration_cast<seconds>(ms);
+    std::stringstream ss;
+    std::chrono::milliseconds ms = std::chrono::duration_cast<std::chrono::milliseconds>(time_.time_since_epoch());
+    std::chrono::seconds s = std::chrono::duration_cast<std::chrono::seconds>(ms);
     std::time_t t = s.count();
     std::size_t milliseconds = ms.count() % 1000;
-    ss << put_time(localtime(&t), "%F %T") << '.';
-    ss << setfill('0') << setw(3) << milliseconds << ";";
+    ss << std::put_time(localtime(&t), "%F %T") << '.';
+    ss << std::setfill('0') << std::setw(3) << milliseconds << ";";
     ss.precision(2);
-    ss << fixed;
-//    ss << "A" << ":";
-//    ss << _globals[GLOBAL_LAeq] << ";";
-    for (int freq = _lowerFreq; freq <= _higherFreq; freq++) {
+    ss << std::fixed;
+    //    ss << "A" << ":";
+    //    ss << globals_[GLOBAL_LAeq] << ";";
+    for (int freq = lower_freq_; freq <= higher_freq_; freq++)
+    {
         ss << freq << ":";
-        ss << _leqs[freq] << ";";
+        ss << leqs_[freq] << ";";
     }
     return ss.str();
 }

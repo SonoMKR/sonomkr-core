@@ -5,7 +5,7 @@
 #define CONTROLLERBIND_PATH "controllerBind"
 #define AUDIO_SOUNDCARD_PATH "audio.soundCard"
 #define AUDIO_CHANNELS_PATH "audio.availableChannels"
-#define AUDIO_SAMPLERATE_PATH "audio.sampleRate"
+#define AUDIO_SAMPLERATE_PATH "audio.sample_rate"
 #define AUDIO_BITDEPTH_PATH "audio.bitDepth"
 #define AUDIO_PERIODS_PATH "audio.periods"
 #define AUDIO_PERIODSIZE_PATH "audio.periodSize"
@@ -25,25 +25,22 @@
 
 #include <libconfig.h++>
 
-using namespace std;
-using namespace libconfig;
-
-class Configuration {
-
-private:
-    Config _mainConfig;
-    Config _filtersConfig;
-    string _mainFilePath;
-    string _filtersFilePath;
+class Configuration
+{
+  private:
+    libconfig::Config main_config_;
+    libconfig::Config filters_config_;
+    std::string main_file_path_;
+    std::string filters_file_path_;
 
     void setDefault();
 
-public:
-    Configuration(string mainFilePath, string filtersFilePath);
-    void readMainConfig(string filePath);
-    Setting& getSetting(string path);
-    Setting& getFilter(int sampleRate, int base, int frequency);
-    Setting& getAliasingFilter(int sampleRate, int base);
+  public:
+    Configuration(std::string main_file_path, std::string filters_file_path);
+    void readMainConfig(std::string file_path);
+    libconfig::Setting &getSetting(std::string path);
+    libconfig::Setting &getFilter(int sample_rate, int base, int frequency);
+    libconfig::Setting &getAliasingFilter(int sample_rate, int base);
 };
 
 #endif // CONFIGURATION_H

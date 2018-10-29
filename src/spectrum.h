@@ -11,38 +11,34 @@
 
 #include "defines.h"
 
-using namespace std;
-using namespace std::chrono;
-
 class Spectrum
 {
 private:
-    int _lowerFreq;
-    int _higherFreq;
-    int _nbFreq;
+    int lower_freq_;
+    int higher_freq_;
+    int nb_freq_;
+    int valid_count_;
 
-    int _validCount;
+    std::chrono::system_clock::time_point time_;
+    int milliseconds_;
 
-    system_clock::time_point _time;
-    int _milliseconds;
-
-    map<int, double> _leqs;
-    map<int, double> _globals;
+    std::map<int, double> leqs_;
+    std::map<int, double> globals_;
 
 public:
     Spectrum();
-    Spectrum(int lowerFreq, int highFreq, system_clock::time_point time = system_clock::now());
-    void reset(int lowerFreq, int highFreq, system_clock::time_point time = system_clock::now());
+    Spectrum(int lower_freq, int higher_freq, std::chrono::system_clock::time_point time = std::chrono::system_clock::now());
+    void reset(int lower_freq, int higher_freq, std::chrono::system_clock::time_point time = std::chrono::system_clock::now());
 
     void setLeq(int freq, float value);
     void setGlobal(int global, float value);
-    void setTime(system_clock::time_point time);
+    void setTime(std::chrono::system_clock::time_point time);
 
     bool isFull();
     void calculateGlobals();
 
 //    string getHeaderString();
-    string toString();
+    std::string toString();
 };
 
 namespace spectrum {

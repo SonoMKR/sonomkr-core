@@ -3,7 +3,7 @@
 AntiAliasingFilter::AntiAliasingFilter(RingBuffer *input_buffer,
                                        int size_to_read,
                                        int input_sample_rate,
-                                       Setting &filter_config) :
+                                       libconfig::Setting &filter_config) :
     RingBufferConsumer(input_buffer, size_to_read),
     input_sample_sate_(input_sample_rate),
     filter_(filter_config),

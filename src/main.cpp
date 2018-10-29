@@ -7,16 +7,14 @@
 
 #include "defines.h"
 
-using namespace std;
-
 int main()
 {
-    string mainConfig = "./sonomkr.conf";
-    string filtersConfig = "./filters.conf";
+    std::string main_config = "./sonomkr.conf";
+    std::string filters_config = "./filters.conf";
 
     // Read the file. If there is an error, report it and exit.
     try {
-        Configuration config(mainConfig, filtersConfig);
+        Configuration config(main_config, filters_config);
         zmqpp::context context;
 
         MainController* controller = new MainController(&config, &context);
@@ -24,11 +22,11 @@ int main()
         controller->waitUntilDone();
         return EXIT_SUCCESS;
     }
-    catch (const FileIOException& fioex) {
+    catch (const libconfig::FileIOException& fioex) {
         std::cerr << "I/O error while reading file." << std::endl;
         return EXIT_FAILURE;
     }
-    catch (const ParseException& pex) {
+    catch (const libconfig::ParseException& pex) {
         std::cerr << "Parse error at " << pex.getFile() << ":" << pex.getLine()
                   << " - " << pex.getError() << std::endl;
         return EXIT_FAILURE;

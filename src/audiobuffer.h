@@ -31,7 +31,9 @@ public:
     ~AudioBuffer();
 
     void resetBuffers();
-    void writeAudioToBuffers(const char* input_buffer, const int& size_to_write, int& nb_channels,
+    void writeAudioToBuffers(const char* input_buffer,
+                             const int& size_to_write,
+                             int& nb_channels,
                              int& format_bit);
     RingBuffer* getChannelBuffer(int channel);
 };

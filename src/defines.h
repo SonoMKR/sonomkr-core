@@ -69,6 +69,11 @@
 #define FREQ_16kHz 43
 #define FREQ_20kHz 44
 
+#define FREQ_USER_1 45
+#define FREQ_USER_2 46
+#define FREQ_USER_3 47
+#define FREQ_USER_4 48
+#define FREQ_USER_5 49
 
 #define A_WEIGHT_0p8Hz -156.32
 #define A_WEIGHT_1Hz -148.58
@@ -116,105 +121,113 @@
 #define A_WEIGHT_16kHz -6.6
 #define A_WEIGHT_20kHz -9.3
 
-using namespace std;
-
-inline string freqToString(int freq)
+inline std::string freqToString(int freq)
 {
-    switch (freq) {
+    switch (freq)
+    {
     case 0:
-        return string("0.8Hz");
+        return std::string("0.8Hz");
     case 1:
-        return string("1Hz");
+        return std::string("1Hz");
     case 2:
-        return string("1.25Hz");
+        return std::string("1.25Hz");
     case 3:
-        return string("1.6Hz");
+        return std::string("1.6Hz");
     case 4:
-        return string("2Hz");
+        return std::string("2Hz");
     case 5:
-        return string("2.5Hz");
+        return std::string("2.5Hz");
     case 6:
-        return string("3.15Hz");
+        return std::string("3.15Hz");
     case 7:
-        return string("4Hz");
+        return std::string("4Hz");
     case 8:
-        return string("5Hz");
+        return std::string("5Hz");
     case 9:
-        return string("6.3Hz");
+        return std::string("6.3Hz");
     case 10:
-        return string("8Hz");
+        return std::string("8Hz");
     case 11:
-        return string("10Hz");
+        return std::string("10Hz");
     case 12:
-        return string("12.5Hz");
+        return std::string("12.5Hz");
     case 13:
-        return string("16Hz");
+        return std::string("16Hz");
     case 14:
-        return string("20Hz");
+        return std::string("20Hz");
     case 15:
-        return string("25Hz");
+        return std::string("25Hz");
     case 16:
-        return string("31.5Hz");
+        return std::string("31.5Hz");
     case 17:
-        return string("40Hz");
+        return std::string("40Hz");
     case 18:
-        return string("50Hz");
+        return std::string("50Hz");
     case 19:
-        return string("63Hz");
+        return std::string("63Hz");
     case 20:
-        return string("80Hz");
+        return std::string("80Hz");
     case 21:
-        return string("100Hz");
+        return std::string("100Hz");
     case 22:
-        return string("125Hz");
+        return std::string("125Hz");
     case 23:
-        return string("160Hz");
+        return std::string("160Hz");
     case 24:
-        return string("200Hz");
+        return std::string("200Hz");
     case 25:
-        return string("250Hz");
+        return std::string("250Hz");
     case 26:
-        return string("315Hz");
+        return std::string("315Hz");
     case 27:
-        return string("400Hz");
+        return std::string("400Hz");
     case 28:
-        return string("500Hz");
+        return std::string("500Hz");
     case 29:
-        return string("630Hz");
+        return std::string("630Hz");
     case 30:
-        return string("800Hz");
+        return std::string("800Hz");
     case 31:
-        return string("1kHz");
+        return std::string("1kHz");
     case 32:
-        return string("1.25kHz");
+        return std::string("1.25kHz");
     case 33:
-        return string("1.6kHz");
+        return std::string("1.6kHz");
     case 34:
-        return string("2kHz");
+        return std::string("2kHz");
     case 35:
-        return string("2.5kHz");
+        return std::string("2.5kHz");
     case 36:
-        return string("3.15kHz");
+        return std::string("3.15kHz");
     case 37:
-        return string("4kHz");
+        return std::string("4kHz");
     case 38:
-        return string("5kHz");
+        return std::string("5kHz");
     case 39:
-        return string("6.3kHz");
+        return std::string("6.3kHz");
     case 40:
-        return string("8kHz");
+        return std::string("8kHz");
     case 41:
-        return string("10Hz");
+        return std::string("10Hz");
     case 42:
-        return string("12.5kHz");
+        return std::string("12.5kHz");
     case 43:
-        return string("16kHz");
+        return std::string("16kHz");
     case 44:
-        return string("20kHz");
+        return std::string("20kHz");
+    case 45:
+        return std::string("user_1");
+    case 46:
+        return std::string("user_2");
+    case 47:
+        return std::string("user_3");
+    case 48:
+        return std::string("user_4");
+    case 49:
+        return std::string("user_5");
     default:
-        return string("   ");
+        return std::string("   ");
     }
-
 }
 
 #endif // DEFINES_H
