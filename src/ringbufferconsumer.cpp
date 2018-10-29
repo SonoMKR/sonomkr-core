@@ -1,61 +1,61 @@
 #include "ringbufferconsumer.h"
+
 #include "ringbuffer.h"
 
-template<class T>
-RingBufferConsumer<T>::RingBufferConsumer(RingBuffer<T>* buffer, int sizeToRead):
-    _buffer(buffer),
-    _sizeToRead(sizeToRead)
+RingBufferConsumer::RingBufferConsumer(RingBuffer *buffer, int size_to_read) :
+    do_read_(false),
+    buffer_(buffer),
+    size_to_read_(size_to_read),
+    reader_index_(buffer->registerReader()),
+    buffer_ptr_(buffer->getBufferPtr()),
+    buffer_size_(buffer->getBufferSize())
 {
-    _readerIndex = _buffer->registerReader();
-    _bufferPtr = _buffer->getBufferPtr();
-    _bufferSize = _buffer->getBufferSize();
 }
 
-template<class T>
-RingBufferConsumer<T>::~RingBufferConsumer<T>()
+RingBufferConsumer::~RingBufferConsumer()
 {
-    _doRead = false;
-    _readThread.join();
+    do_read_ = false;
+    read_thread_.join();
 }
 
-template<class T>
-void RingBufferConsumer<T>::run()
+void RingBufferConsumer::run()
 {
-//    cout << "begin thread : " << this << endl;
-    int sizeRed = 0;
-    unsigned long readPosition = 0;
+    //    cout << "begin thread : " << this << endl;
+    int size_red = 0;
+    unsigned long read_position = 0;
 
-    while (_doRead) {
-        if (_buffer->waitToBeginRead(_readerIndex, _sizeToRead, readPosition)) {
-            if (!_doRead) {
+    while (do_read_)
+    {
+        if (buffer_->waitToBeginRead(reader_index_, size_to_read_, read_position))
+        {
+            if (!do_read_)
+            {
                 break;
             }
-            sizeRed = processData(readPosition);
-            if (sizeRed < 0) {
+            size_red = processData(read_position);
+            if (size_red < 0)
+            {
                 continue;
             }
-            _buffer->endRead(_readerIndex, sizeRed);
+            buffer_->endRead(reader_index_, size_red);
         }
     }
-//    cout << "end thread : " << this << endl;
+    //    cout << "end thread : " << this << endl;
 }
 
-template<class T>
-void RingBufferConsumer<T>::start()
+void RingBufferConsumer::start()
 {
-    _doRead = true;
-    _readThread = thread(&RingBufferConsumer<T>::run, this);
+    do_read_ = true;
+    read_thread_ = std::thread(&RingBufferConsumer::run, this);
 }
 
-template<class T>
-void RingBufferConsumer<T>::stop()
+void RingBufferConsumer::stop()
 {
-    _doRead = false;
-    _readThread.detach();
+    do_read_ = false;
+    read_thread_.detach();
 }
 
-template<class T>
-void RingBufferConsumer<T>::waitUntilDone()
+void RingBufferConsumer::waitUntilDone()
 {
-    _readThread.join();
+    read_thread_.join();
 }

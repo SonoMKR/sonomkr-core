@@ -1,144 +1,167 @@
 #include "maincontroller.h"
 
-#include "leqfilter.h"
+#include <iostream>
+
 #include "audiobuffer.h"
 #include "audiocapture.h"
 #include "sinegenerator.h"
 #include "spectrumchannel.h"
 #include "configuration.h"
 
-MainController::MainController(Configuration* config, context* zmq):
-    _doRun(false),
-    _config(config),
-    _zmqContext(zmq),
-    _zmqReqSocket(*_zmqContext, socket_type::reply)
+MainController::MainController(Configuration *config, zmqpp::context *zmq) :
+    do_run_(false),
+    config_(config),
+    zmq_context_(zmq),
+    zmq_req_socket_(*zmq, zmqpp::socket_type::reply)
 {
-    string endPoint = _config->getSetting(string(CONTROLLERBIND_PATH)).c_str();
-    _zmqReqSocket.bind(endPoint.c_str());
+    std::string endpoint = config_->getSetting(std::string(CONTROLLERBIND_PATH)).c_str();
+    zmq_req_socket_.bind(endpoint.c_str());
 
-    _audioBuffer = new AudioBuffer(_config);
-    _audioCapture = new AudioCapture(_config, _audioBuffer);
-//    SineGenerator* sine = new SineGenerator(2000.0, 44100);
-//    sine->start();
+    audio_buffer_ = new AudioBuffer(config_);
+    audio_capture_ = new AudioCapture(config_, audio_buffer_);
+    //    SineGenerator* sine = new SineGenerator(2000.0, 44100);
+    //    sine->start();
 
-    _isCh1Active = _config->getSetting(string(CH1_ACTIVE_PATH));
-    _isCh2Active = _config->getSetting(string(CH2_ACTIVE_PATH));
+    is_ch1_active_ = config_->getSetting(std::string(CH1_ACTIVE_PATH));
+    is_ch2_active_ = config_->getSetting(std::string(CH2_ACTIVE_PATH));
 
-    int channelCount = 0;
-    if (_isCh1Active) {
-        _channel1 = new SpectrumChannel(_config, 1, _audioBuffer->getChannelBuffer(channelCount), 1024,
-                                        _zmqContext);
-        channelCount++;
+    int channel_count = 0;
+    if (is_ch1_active_)
+    {
+        channel1_ = new SpectrumChannel(config_,
+                                        1,
+                                        audio_buffer_->getChannelBuffer(channel_count),
+                                        1024,
+                                        zmq_context_);
+        channel_count++;
     }
-    if (_isCh2Active) {
-        _channel2 = new SpectrumChannel(_config, 2, _audioBuffer->getChannelBuffer(channelCount), 1024,
-                                        _zmqContext);
-        channelCount++;
+    if (is_ch2_active_)
+    {
+        channel2_ = new SpectrumChannel(config_,
+                                        2,
+                                        audio_buffer_->getChannelBuffer(channel_count),
+                                        1024,
+                                        zmq_context_);
+        channel_count++;
     }
 }
 
 MainController::~MainController()
 {
-    _doRun = false;
-    _runThread.join();
-    _zmqReqSocket.close();
+    do_run_ = false;
+    run_thread_.join();
+    zmq_req_socket_.close();
 
-    if (_isCh1Active) {
-        delete _channel1;
+    if (is_ch1_active_)
+    {
+        delete channel1_;
     }
-    if (_isCh2Active) {
-        delete _channel2;
+    if (is_ch2_active_)
+    {
+        delete channel2_;
     }
-    delete _audioCapture;
-    delete _audioBuffer;
+    delete audio_capture_;
+    delete audio_buffer_;
 }
 
 void MainController::startChannels()
 {
-    if (_isCh1Active) {
-        _channel1->start();
+    if (is_ch1_active_)
+    {
+        channel1_->start();
     }
-    if (_isCh2Active) {
-        _channel2->start();
+    if (is_ch2_active_)
+    {
+        channel2_->start();
     }
 }
 
 void MainController::startChannel(int channel)
 {
-    if (channel == 1 && _isCh1Active) {
-        _channel1->start();
+    if (channel == 1 && is_ch1_active_)
+    {
+        channel1_->start();
     }
-    if (channel == 2 && _isCh2Active) {
-        _channel2->start();
+    if (channel == 2 && is_ch2_active_)
+    {
+        channel2_->start();
     }
 }
 
 void MainController::stopChannels()
 {
-    if (_isCh1Active) {
-        _channel1->stop();
+    if (is_ch1_active_)
+    {
+        channel1_->stop();
     }
-    if (_isCh2Active) {
-        _channel2->stop();
+    if (is_ch2_active_)
+    {
+        channel2_->stop();
     }
 }
 
 void MainController::stopChannel(int channel)
 {
-    if (channel == 1 && _isCh1Active) {
-        _channel1->stop();
+    if (channel == 1 && is_ch1_active_)
+    {
+        channel1_->stop();
     }
-    if (channel == 2 && _isCh2Active) {
-        _channel2->stop();
+    if (channel == 2 && is_ch2_active_)
+    {
+        channel2_->stop();
     }
 }
 
 void MainController::run()
 {
-    while (_doRun) {
-        message msg;
-        _zmqReqSocket.receive(msg);
-        if (!_doRun) {
+    while (do_run_)
+    {
+        zmqpp::message msg;
+        zmq_req_socket_.receive(msg);
+        if (!do_run_)
+        {
             break;
         }
-        cout << msg.get(0) << endl;
-        if (msg.get(0) == "startAll") {
+        std::cout << msg.get(0) << std::endl;
+        if (msg.get(0) == "startAll")
+        {
             startChannels();
-            cout << "START ALL" << endl;
+            std::cout << "START ALL" << std::endl;
         }
-        if (msg.get(0) == "stopAll") {
+        if (msg.get(0) == "stopAll")
+        {
             stopChannels();
-            cout << "STOP ALL" << endl;
+            std::cout << "STOP ALL" << std::endl;
         }
-        _zmqReqSocket.send("OK");
+        zmq_req_socket_.send("OK");
     }
 }
 
 void MainController::start()
 {
-    _doRun = true;
-    _audioCapture->start();
-    bool autostart = _config->getSetting(AUTOSTART_PATH);
-    if (autostart) {
+    do_run_ = true;
+    audio_capture_->start();
+    bool autostart = config_->getSetting(AUTOSTART_PATH);
+    if (autostart)
+    {
         startChannels();
     }
-    _runThread = thread(&MainController::run, this);
+    run_thread_ = std::thread(&MainController::run, this);
 }
 
 void MainController::stop()
 {
     stopChannels();
-    _audioCapture->stop();
+    audio_capture_->stop();
 }
 
 void MainController::exit()
 {
-    _doRun = false;
+    do_run_ = false;
     stop();
 }
 
 void MainController::waitUntilDone()
 {
-    _runThread.join();
+    run_thread_.join();
 }
-

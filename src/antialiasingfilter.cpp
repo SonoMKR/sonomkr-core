@@ -1,40 +1,42 @@
 #include "antialiasingfilter.h"
 
-AntiAliasingFilter::AntiAliasingFilter(RingBuffer<float>* inputBuffer,
-                                       int sizeToRead,
-                                       int inputSampleRate,
-                                       Setting& filterConfig):
-    RingBufferConsumer<float>(inputBuffer, sizeToRead),
-    _inputSampleRate(inputSampleRate),
-    _filter(filterConfig),
-    _sampleCounter(0)
+AntiAliasingFilter::AntiAliasingFilter(RingBuffer *input_buffer,
+                                       int size_to_read,
+                                       int input_sample_rate,
+                                       libconfig::Setting &filter_config) :
+    RingBufferConsumer(input_buffer, size_to_read),
+    input_sample_sate_(input_sample_rate),
+    filter_(filter_config),
+    sample_counter_(0),
+    ouput_sample_rate_(input_sample_rate / 10),
+    output_buffer_size_(buffer_size_ / 10)
 {
-    _ouputSampleRate = _inputSampleRate / 10;
-    _outputBufferSize = _bufferSize / 10;
-    _outputBuffer = new RingBuffer<float>(_outputBufferSize);
+    output_buffer_ = new RingBuffer(output_buffer_size_);
 }
 
 AntiAliasingFilter::~AntiAliasingFilter()
 {
-    delete _outputBuffer;
+    delete output_buffer_;
 }
 
-int AntiAliasingFilter::processData(unsigned long readPosition)
+int AntiAliasingFilter::processData(unsigned long read_position)
 {
-    int sizeToWrite = 0;
+    int size_to_write = 0;
     // carefull to have a _sizeToTead a multiple of 10
-    float decimateBuffer[_sizeToRead/10];
-    for (int i = 0; i < _sizeToRead; i++) {
-        unsigned long position = (readPosition + i) % _bufferSize;
-        float sample = _filter.filter(_bufferPtr[position]);
-        if (_sampleCounter % 10 == 0) {
-            decimateBuffer[sizeToWrite] = sample;
-            sizeToWrite++;
+    float decimate_buffer[size_to_read_ / 10];
+    for (int i = 0; i < size_to_read_; i++)
+    {
+        unsigned long position = (read_position + i) % buffer_size_;
+        float sample = filter_.filter(buffer_ptr_[position]);
+        if (sample_counter_ % 10 == 0)
+        {
+            decimate_buffer[size_to_write] = sample;
+            size_to_write++;
         }
-        _sampleCounter = (_sampleCounter + 1) % 10;
+        sample_counter_ = (sample_counter_ + 1) % 10;
     }
 
-    _outputBuffer->writeToBuffer(decimateBuffer, sizeToWrite);
+    output_buffer_->writeToBuffer(decimate_buffer, size_to_write);
 
-    return _sizeToRead;
+    return size_to_read_;
 }

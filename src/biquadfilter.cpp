@@ -5,43 +5,43 @@ BiquadFilter::BiquadFilter()
 
 }
 
-BiquadFilter::BiquadFilter(Setting& biquadConfig)
+BiquadFilter::BiquadFilter(libconfig::Setting& biquad_config)
 {
-    initialize(biquadConfig);
+    initialize(biquad_config);
 }
 
-void BiquadFilter::initialize(Setting& biquadConfig)
+void BiquadFilter::initialize(libconfig::Setting& biquad_config)
 {
-    _b0 = biquadConfig.lookup("b0");
-    _b1 = biquadConfig.lookup("b1");
-    _b2 = biquadConfig.lookup("b2");
-    _a1 = biquadConfig.lookup("a1");
-    _a2 = biquadConfig.lookup("a2");
+    b0 = biquad_config.lookup("b0");
+    b1_ = biquad_config.lookup("b1");
+    b2_ = biquad_config.lookup("b2");
+    a1_ = biquad_config.lookup("a1");
+    a2_ = biquad_config.lookup("a2");
 
-    _delay1 = 0;
-    _delay2 = 0;
+    delay1_ = 0;
+    delay2_ = 0;
 }
 
 void BiquadFilter::reset()
 {
-    _delay1 = 0;
-    _delay2 = 0;
+    delay1_ = 0;
+    delay2_ = 0;
 }
 
 double BiquadFilter::filter(double sample)
 {
-    double inputAcc = sample;
-    double outputAcc = 0;
+    double input_acc = sample;
+    double output_acc = 0;
 
-    inputAcc -= _delay1 * _a1;
-    inputAcc -= _delay2 * _a2;
+    input_acc -= delay1_ * a1_;
+    input_acc -= delay2_ * a2_;
 
-    outputAcc = inputAcc * _b0;
-    outputAcc += _delay1 * _b1;
-    outputAcc += _delay2 * _b2;
+    output_acc = input_acc * b0;
+    output_acc += delay1_ * b1_;
+    output_acc += delay2_ * b2_;
 
-    _delay2 = _delay1;
-    _delay1 = inputAcc;
+    delay2_ = delay1_;
+    delay1_ = input_acc;
 
-    return outputAcc;
+    return output_acc;
 }

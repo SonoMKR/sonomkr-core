@@ -3,25 +3,23 @@
 
 #include <thread>
 
-template<class T>
-class RingBuffer;
+#include "ringbuffer.h"
 
-using namespace std;
+class RingBufferConsumer
+{
+  protected:
+    RingBuffer *buffer_;
+    int reader_index_;
+    std::thread read_thread_;
+    bool do_read_;
+    float *buffer_ptr_;
+    int buffer_size_;
+    int size_to_read_;
 
-template<class T>
-class RingBufferConsumer {
-protected:
-    RingBuffer<T>* _buffer;
-    int _readerIndex;
-    thread _readThread;
-    bool _doRead;
-    T* _bufferPtr;
-    int _bufferSize;
-    int _sizeToRead;
-    virtual int processData(unsigned long readPosition) = 0;
+    virtual int processData(unsigned long read_position) = 0;
 
-public:
-    RingBufferConsumer(RingBuffer<T>* buffer, int sizeToRead);
+  public:
+    RingBufferConsumer(RingBuffer *buffer, int size_to_read);
     virtual ~RingBufferConsumer();
     void run();
     void start();
@@ -29,7 +27,5 @@ public:
 
     void waitUntilDone();
 };
-
-template class RingBufferConsumer<float>;
 
 #endif // RINGBUFFERCONSUMER_H

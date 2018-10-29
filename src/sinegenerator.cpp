@@ -5,7 +5,7 @@ SineGenerator::SineGenerator(float freq, unsigned long size):
     _freq(freq)
 {
 
-    _audioBuffer = new RingBuffer<float>(size);
+    _audioBuffer = new RingBuffer(size);
 
     _rate = 44100;
 
@@ -45,7 +45,7 @@ void SineGenerator::run()
 void SineGenerator::start()
 {
     _doSine = true;
-    _generatorThread = thread(&SineGenerator::run, this);
+    _generatorThread = std::thread(&SineGenerator::run, this);
 }
 
 void SineGenerator::stop()

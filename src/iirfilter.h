@@ -1,26 +1,19 @@
 #ifndef IIR_FILTER_H
 #define IIR_FILTER_H
 
-//#include <fstream>
 #include <array>
 #include <libconfig.h++>
 
-#include "libconfig.h++"
+#include "biquadfilter.h"
 
-class BiquadFilter;
+class IirFilter
+{
+  private:
+    int nb_filters_;
+    BiquadFilter *filters_;
 
-using namespace std;
-using namespace libconfig;
-
-class IirFilter {
-private:
-    int _nbFilters;
-    BiquadFilter* _filters;
-    //    std::ofstream _iirInputSamples;
-    //    std::ofstream _iirOutputSamples;
-
-public:
-    IirFilter(Setting& filterConfig);
+  public:
+    IirFilter(libconfig::Setting &filter_config);
     ~IirFilter();
     double filter(double sample);
 };

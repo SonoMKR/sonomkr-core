@@ -11,8 +11,8 @@
 
 class SineGenerator {
 private:
-    RingBuffer<float>* _audioBuffer;
-    thread _generatorThread;
+    RingBuffer* _audioBuffer;
+    std::thread _generatorThread;
     int _rate, _periodsize;
     bool _doSine;
     float _freq;
@@ -25,7 +25,7 @@ public:
     void start();
     void stop();
 
-    RingBuffer<float>* getBuffer() {
+    RingBuffer* getBuffer() {
         return _audioBuffer;
     }
 };
