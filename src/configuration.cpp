@@ -67,9 +67,9 @@ void Configuration::setDefault()
     {
         audio.add("availableChannels", libconfig::Setting::TypeInt) = 2;
     }
-    if (!audio.exists("sample_rate"))
+    if (!audio.exists("sampleRate"))
     {
-        audio.add("sample_rate", libconfig::Setting::TypeInt) = 44100;
+        audio.add("sampleRate", libconfig::Setting::TypeInt) = 44100;
     }
     if (!audio.exists("bitDepth"))
     {
@@ -98,6 +98,10 @@ void Configuration::setDefault()
     {
         channel1.add("active", libconfig::Setting::TypeBoolean) = true;
     }
+    if (!channel1.exists("strategy"))
+    {
+        channel1.add("strategy", libconfig::Setting::TypeString) = "G10";
+    }
     if (!channel1.exists("fmin"))
     {
         channel1.add("fmin", libconfig::Setting::TypeInt) = 12;
@@ -124,6 +128,10 @@ void Configuration::setDefault()
     if (!channel2.exists("active"))
     {
         channel2.add("active", libconfig::Setting::TypeBoolean) = true;
+    }
+    if (!channel1.exists("strategy"))
+    {
+        channel1.add("strategy", libconfig::Setting::TypeString) = "G10";
     }
     if (!channel2.exists("fmin"))
     {

@@ -194,4 +194,5 @@ void SpectrumChannel::applyG10Strategy()
 
 void SpectrumChannel::applyG2Strategy()
 {
+    // TODO
 }

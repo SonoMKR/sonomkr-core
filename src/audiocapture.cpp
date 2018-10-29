@@ -1,5 +1,7 @@
 #include "audiocapture.h"
 
+#include <stdio>
+
 AudioCapture::AudioCapture(Configuration *config, AudioBuffer *audio_buffer) :
     config_(config),
     audio_buffer_(audio_buffer)
@@ -29,7 +31,7 @@ void AudioCapture::run()
 
     if (!(capture_handle_ = open_pcm()))
     {
-        // ("Could not open PCM for capture.");
+        std::cerr << ("Could not open PCM for capture.") << std::endl;
         do_capture_ = false;
         return;
     }
@@ -42,7 +44,7 @@ void AudioCapture::run()
     schp.sched_priority = sched_get_priority_max(SCHED_FIFO);
     if (int err = sched_setscheduler(0, SCHED_FIFO, &schp) != 0)
     {
-        //("Can't set sched_setscheduler (%d) - using normal priority", err);
+        std::cerr << "Can't set sched_setscheduler (" << err << ") - using normal priority" << std::endl;
     }
 
     while (do_capture_)
@@ -85,8 +87,7 @@ snd_pcm_t *AudioCapture::open_pcm()
                        SND_PCM_STREAM_CAPTURE, 0);
     if (err < 0)
     {
-        //        ("Error opening PCM device %s (%s)", (pcm_name_),
-        //                snd_strerror(err));
+        std::cerr << "Error opening PCM device" << pcm_name_ << "(" << snd_strerror(err) << ")" << std::endl;
         return (NULL);
     }
 
@@ -95,6 +96,7 @@ snd_pcm_t *AudioCapture::open_pcm()
     if (err < 0)
     {
         //        ("Can not configure this PCM device (%s).", snd_strerror(err));
+        std::cerr << "Can not configure this PCM device (" << snd_strerror(err) << ")" << std::endl;
         snd_pcm_close(pcm_handle);
         return (NULL);
     }
@@ -103,6 +105,7 @@ snd_pcm_t *AudioCapture::open_pcm()
     if (err < 0)
     {
         //        ("Error setting access (%s).", snd_strerror(err));
+        std::cerr << "Error setting access (" << snd_strerror(err) << ")" << std::endl;
         snd_pcm_close(pcm_handle);
         return (NULL);
     }
@@ -113,6 +116,7 @@ snd_pcm_t *AudioCapture::open_pcm()
         if (err < 0)
         {
             snd_pcm_close(pcm_handle);
+            std::cerr << "Error setting format (" << snd_strerror(err) << ")" << std::endl;
             //            ("Error setting format (%s).", snd_strerror(err));
             return (NULL);
         }
@@ -125,6 +129,7 @@ snd_pcm_t *AudioCapture::open_pcm()
         {
             snd_pcm_close(pcm_handle);
             //            ("Error setting format (%s).", snd_strerror(err));
+            std::cerr << "Error setting format (" << snd_strerror(err) << ")" << std::endl;
             return (NULL);
         }
     }
@@ -136,6 +141,7 @@ snd_pcm_t *AudioCapture::open_pcm()
         {
             snd_pcm_close(pcm_handle);
             //            ("Error setting format (%s).", snd_strerror(err));
+            std::cerr << "Error setting format (" << snd_strerror(err) << ")" << std::endl;
             return (NULL);
         }
     }
@@ -144,6 +150,7 @@ snd_pcm_t *AudioCapture::open_pcm()
     if (err < 0)
     {
         //        ("Error setting rate (%s).", snd_strerror(err));
+        std::cerr << "Error setting rate (" << snd_strerror(err) << ")" << std::endl;
         snd_pcm_close(pcm_handle);
         return (NULL);
     }
@@ -158,6 +165,7 @@ snd_pcm_t *AudioCapture::open_pcm()
     {
         snd_pcm_close(pcm_handle);
         //        ("Error setting channels (%s).", snd_strerror(err));
+        std::cerr << "Error setting channels (" << snd_strerror(err) << ")" << std::endl;
         return (NULL);
     }
     err = snd_pcm_hw_params_set_periods(pcm_handle, hwparams, periods_, 0);
@@ -165,6 +173,7 @@ snd_pcm_t *AudioCapture::open_pcm()
     {
         snd_pcm_close(pcm_handle);
         //        ("Error setting periods (%s).", snd_strerror(err));
+        std::cerr << "Error setting periods (" << snd_strerror(err) << ")" << std::endl;
         return (NULL);
     }
     buffersize_return = period_size_ * periods_;
@@ -173,6 +182,7 @@ snd_pcm_t *AudioCapture::open_pcm()
     if (err < 0)
     {
         //        ("Error setting buffersize (%s).", snd_strerror(err));
+        std::cerr << "Error setting buffersize (" << snd_strerror(err) << ")" << std::endl;
         snd_pcm_close(pcm_handle);
         return (NULL);
     }
@@ -181,12 +191,14 @@ snd_pcm_t *AudioCapture::open_pcm()
         //        ("Periodsize %d is not available on your hardware. "
         //            "Using %d instead.",
         //            period_size_, (int)buffersize_return / _periods);
+        std::cerr << "Periodsize " << period_size_ << " is not available on your hardware. Using " << (int)buffersize_return / _periods << "instead" << std::endl;
         period_size_ = buffersize_return / periods_;
     }
     err = snd_pcm_hw_params(pcm_handle, hwparams);
     if (err < 0)
     {
         //        ("Error setting HW params (%s).", snd_strerror(err));
+        std::cerr << "Error setting HW params (" << snd_strerror(err) << ")" << std::endl;
         snd_pcm_close(pcm_handle);
         return (NULL);
     }
