@@ -191,7 +191,7 @@ snd_pcm_t *AudioCapture::open_pcm()
         //        ("Periodsize %d is not available on your hardware. "
         //            "Using %d instead.",
         //            period_size_, (int)buffersize_return / _periods);
-        std::cerr << "Periodsize " << period_size_ << " is not available on your hardware. Using " << (int)buffersize_return / _periods << "instead" << std::endl;
+        std::cerr << "Periodsize " << period_size_ << " is not available on your hardware. Using " << ((int)buffersize_return / periods_) << "instead" << std::endl;
         period_size_ = buffersize_return / periods_;
     }
     err = snd_pcm_hw_params(pcm_handle, hwparams);
