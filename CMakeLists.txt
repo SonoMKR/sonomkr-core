@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.12.0)
+cmake_minimum_required(VERSION 3.7.0)
 project(sonomkr-core VERSION 0.1.0)
 
 set(CMAKE_CXX_STANDARD 14)
