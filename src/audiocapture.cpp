@@ -1,6 +1,6 @@
 #include "audiocapture.h"
 
-#include <stdio>
+#include <iostream>
 
 AudioCapture::AudioCapture(Configuration *config, AudioBuffer *audio_buffer) :
     config_(config),
