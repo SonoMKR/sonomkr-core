@@ -9,12 +9,17 @@
 #include <vector>
 #include <math.h>
 
+#include <zmqpp/zmqpp.hpp>
+
 #include "ringbuffer.h"
 #include "configuration.h"
 
 class AudioBuffer {
 private:
     Configuration* config_;
+    zmqpp::context* zmq_context_;
+    zmqpp::socket zmq_pub_socket_;
+    
     unsigned long buffer_size_;
     int nb_channels_;
     std::vector<RingBuffer*> channel_buffers_;
@@ -26,8 +31,10 @@ private:
     float decodeAudio24bit(const char* input_buffer);
     float decodeAudio16bit(const char* input_buffer);
 
+    void pubAudioBuffer(int channel, const float* buffer, const int &buffer_size);
+
 public:
-    AudioBuffer(Configuration* config);
+    AudioBuffer(Configuration* config, zmqpp::context* zmq);
     ~AudioBuffer();
 
     void resetBuffers();

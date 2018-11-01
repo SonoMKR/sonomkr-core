@@ -17,7 +17,7 @@ MainController::MainController(Configuration *config, zmqpp::context *zmq) :
     std::string endpoint = config_->getSetting(std::string(CONTROLLERBIND_PATH)).c_str();
     zmq_req_socket_.bind(endpoint.c_str());
 
-    audio_buffer_ = new AudioBuffer(config_);
+    audio_buffer_ = new AudioBuffer(config_, zmq);
     audio_capture_ = new AudioCapture(config_, audio_buffer_);
     //    SineGenerator* sine = new SineGenerator(2000.0, 44100);
     //    sine->start();

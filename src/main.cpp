@@ -1,7 +1,8 @@
 #include <iostream>
+#include <boost/filesystem.hpp>
 #include <libconfig.h++>
 #include <zmqpp/zmqpp.hpp>
-
+		
 #include "configuration.h"
 #include "maincontroller.h"
 
@@ -9,6 +10,11 @@
 
 int main()
 {
+    boost::filesystem::path etc_main_config("/etc/sonomkr/sonomkr.conf");
+    boost::filesystem::path etc_filters_config("/etc/sonomkr/filters.conf");
+
+    // std::filesystem::path home = getenv("HOME");
+
     std::string main_config = "./sonomkr.conf";
     std::string filters_config = "./filters.conf";
 
@@ -23,7 +29,7 @@ int main()
         return EXIT_SUCCESS;
     }
     catch (const libconfig::FileIOException& fioex) {
-        std::cerr << "I/O error while reading file." << std::endl;
+        std::cerr << "I/O error while reading file" << std::endl;
         return EXIT_FAILURE;
     }
     catch (const libconfig::ParseException& pex) {

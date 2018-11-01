@@ -88,11 +88,13 @@ int SpectrumChannel::processData(unsigned long readPosition)
     return size_to_read_;
 }
 
-void SpectrumChannel::newSpectrum(std::string spectrumStr)
+void SpectrumChannel::newSpectrum(std::string spectrum_str)
 {
     // send topic in first part of the message
-    zmq_pub_socket_.send("LEQ", zmqpp::socket::send_more);
-    zmq_pub_socket_.send(spectrumStr);
+    zmqpp::message msg;
+    msg.add("LEQ");
+    msg.add(spectrum_str);
+    zmq_pub_socket_.send(msg);
 }
 
 void SpectrumChannel::start()

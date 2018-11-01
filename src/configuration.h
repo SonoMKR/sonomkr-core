@@ -5,7 +5,7 @@
 #define CONTROLLERBIND_PATH "controllerBind"
 #define AUDIO_SOUNDCARD_PATH "audio.soundCard"
 #define AUDIO_CHANNELS_PATH "audio.availableChannels"
-#define AUDIO_SAMPLERATE_PATH "audio.sample_rate"
+#define AUDIO_SAMPLERATE_PATH "audio.sampleRate"
 #define AUDIO_BITDEPTH_PATH "audio.bitDepth"
 #define AUDIO_PERIODS_PATH "audio.periods"
 #define AUDIO_PERIODSIZE_PATH "audio.periodSize"

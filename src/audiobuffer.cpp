@@ -1,10 +1,16 @@
 #include "audiobuffer.h"
 
-AudioBuffer::AudioBuffer(Configuration *config) : config_(config)
+AudioBuffer::AudioBuffer(Configuration *config, zmqpp::context* zmq) :
+    config_(config),
+    zmq_context_(zmq),
+    zmq_pub_socket_(*zmq, zmqpp::socket_type::pub)
 {
 #ifdef SINE_TEST
     _lastTime = 0.0;
 #endif
+
+    std::string endpoint = config_->getSetting(std::string(AUDIO_PUBLISH_PATH)).c_str();
+    zmq_pub_socket_.bind(endpoint.c_str());
 
     int sample_rate = config_->getSetting(std::string(AUDIO_SAMPLERATE_PATH));
     buffer_size_ = sample_rate * 30;
@@ -102,6 +108,7 @@ void AudioBuffer::writeAudioToBuffers(const char *input_buffer, const int &buffe
     for (int c = 0; c < nb_channels_; ++c)
     {
         channel_buffers_[c]->writeToBuffer(audio_buffers[c], nb_samples);
+        pubAudioBuffer(c, audio_buffers[c], nb_samples);
     }
 }
 
@@ -130,3 +137,21 @@ float AudioBuffer::decodeAudio16bit(const char *input_buffer)
 
     return data_sample_sound;
 }
+
+void AudioBuffer::pubAudioBuffer(int channel, const float* buffer, const int &buffer_size)
+{
+    int32_t buffer32bit[buffer_size]; 
+    for (int i = 0; i < buffer_size; i++)
+    {
+        buffer32bit[i] = (int32_t)(buffer[i] * 2147483647);
+    }
+    zmqpp::message msg;
+    if (channel == 0) {
+        msg.add("CH1");
+    } else {
+        msg.add("CH2");
+    }
+    msg.add_raw(buffer32bit, buffer_size);
+    zmq_pub_socket_.send(msg);
+}
+
