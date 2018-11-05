@@ -9,23 +9,23 @@ SpectrumChannel::SpectrumChannel(Configuration* config, int channel,
     zmq_context_(zmq_context),
     zmq_pub_socket_(*zmq_context, zmqpp::socket_type::publish)
 {
-    sample_rate_ = config_->getSetting(std::string(AUDIO_SAMPLERATE_PATH));
+    sample_rate_ = config_->audio_.sample_rate;
     std::string publish_bind;
     if (channel == 1)
     {
-        strategy_ = config_->getSetting(std::string(CH1_STRATEGY_PATH)).c_str();
-        fmin_ = config_->getSetting(std::string(CH1_FMIN_PATH));
-        fmax_ = config_->getSetting(std::string(CH1_FMAX_PATH));
-        integration_period_ = config_->getSetting(std::string(CH1_INTEGRATION_PATH));
-        publish_bind = config_->getSetting(std::string(CH1_PUBLISH_PATH)).c_str();
+        strategy_ = config_->channel_1_.strategy;
+        fmin_ = config_->channel_1_.fmin;
+        fmax_ = config_->channel_1_.fmax;
+        integration_period_ = config_->channel_1_.integration_period;
+        publish_bind = config_->channel_1_.publish_bind;
     }
     else if (channel == 2)
     {
-        strategy_ = config_->getSetting(std::string(CH2_STRATEGY_PATH)).c_str();
-        fmin_ = config_->getSetting(std::string(CH2_FMIN_PATH));
-        fmax_ = config_->getSetting(std::string(CH2_FMAX_PATH));
-        integration_period_ = config_->getSetting(std::string(CH2_INTEGRATION_PATH));
-        publish_bind = config_->getSetting(std::string(CH2_PUBLISH_PATH)).c_str();
+        strategy_ = config_->channel_2_.strategy;
+        fmin_ = config_->channel_2_.fmin;
+        fmax_ = config_->channel_2_.fmax;
+        integration_period_ = config_->channel_2_.integration_period;
+        publish_bind = config_->channel_2_.publish_bind;
     }
     zmq_pub_socket_.bind(publish_bind.c_str());
 

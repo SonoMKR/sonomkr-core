@@ -14,7 +14,7 @@ MainController::MainController(Configuration *config, zmqpp::context *zmq) :
     zmq_context_(zmq),
     zmq_req_socket_(*zmq, zmqpp::socket_type::reply)
 {
-    std::string endpoint = config_->getSetting(std::string(CONTROLLERBIND_PATH)).c_str();
+    std::string endpoint = config_->controller_bind_;
     zmq_req_socket_.bind(endpoint.c_str());
 
     audio_buffer_ = new AudioBuffer(config_, zmq);
@@ -22,8 +22,8 @@ MainController::MainController(Configuration *config, zmqpp::context *zmq) :
     //    SineGenerator* sine = new SineGenerator(2000.0, 44100);
     //    sine->start();
 
-    is_ch1_active_ = config_->getSetting(std::string(CH1_ACTIVE_PATH));
-    is_ch2_active_ = config_->getSetting(std::string(CH2_ACTIVE_PATH));
+    is_ch1_active_ = config_->channel_1_.active;
+    is_ch2_active_ = config_->channel_2_.active;
 
     int channel_count = 0;
     if (is_ch1_active_)
@@ -133,7 +133,7 @@ void MainController::run()
             stopChannels();
             std::cout << "STOP ALL" << std::endl;
         }
-        zmq_req_socket_.send("OK");
+        zmq_req_socket_.send("200 OK");
     }
 }
 
@@ -141,7 +141,7 @@ void MainController::start()
 {
     do_run_ = true;
     audio_capture_->start();
-    bool autostart = config_->getSetting(AUTOSTART_PATH);
+    bool autostart = config_->autostart_;
     if (autostart)
     {
         startChannels();

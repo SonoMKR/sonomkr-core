@@ -9,29 +9,21 @@ AudioBuffer::AudioBuffer(Configuration *config, zmqpp::context* zmq) :
     _lastTime = 0.0;
 #endif
 
-    std::string endpoint = config_->getSetting(std::string(AUDIO_PUBLISH_PATH)).c_str();
-    zmq_pub_socket_.bind(endpoint.c_str());
+    zmq_pub_socket_.bind(config_->audio_.publish_bind.c_str());
 
-    int sample_rate = config_->getSetting(std::string(AUDIO_SAMPLERATE_PATH));
+    int sample_rate = config_->audio_.sample_rate;
     buffer_size_ = sample_rate * 30;
 
-    bool is_ch1_active = config_->getSetting(std::string(CH1_ACTIVE_PATH));
-    bool is_ch2_active = config_->getSetting(std::string(CH2_ACTIVE_PATH));
     nb_channels_ = 0;
-    if (is_ch1_active)
+    if (config_->channel_1_.active)
     {
         channel_buffers_.push_back(new RingBuffer(buffer_size_));
         nb_channels_++;
     }
-    if (is_ch2_active)
+    if (config_->channel_2_.active)
     {
         channel_buffers_.push_back(new RingBuffer(buffer_size_));
         nb_channels_++;
-    }
-
-    if (!is_ch1_active && !is_ch2_active)
-    {
-        //no active channels... why ?
     }
 }
 

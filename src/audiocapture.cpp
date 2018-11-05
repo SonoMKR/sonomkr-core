@@ -6,12 +6,12 @@ AudioCapture::AudioCapture(Configuration *config, AudioBuffer *audio_buffer) :
     config_(config),
     audio_buffer_(audio_buffer)
 {
-    bit_depth_ = config_->getSetting(std::string(AUDIO_BITDEPTH_PATH));
-    pcm_name_ = config_->getSetting(std::string(AUDIO_SOUNDCARD_PATH)).c_str();
-    sample_rate_ = config_->getSetting(std::string(AUDIO_SAMPLERATE_PATH));
-    channels_ = config_->getSetting(std::string(AUDIO_CHANNELS_PATH));
-    periods_ = config_->getSetting(std::string(AUDIO_PERIODS_PATH));
-    period_size_ = config_->getSetting(std::string(AUDIO_PERIODSIZE_PATH));
+    bit_depth_ = config_->audio_.bit_depth;
+    pcm_name_ = config_->audio_.sound_card;
+    sample_rate_ = config_->audio_.sample_rate;
+    channels_ = config_->audio_.available_channels;
+    periods_ = config_->audio_.periods;
+    period_size_ = config_->audio_.period_size;
 
     sample_size_ = (bit_depth_ == 24) ? (32 / 8) : (bit_depth_ / 8);
     frame_size_ = channels_ * sample_size_;

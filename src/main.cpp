@@ -1,3 +1,4 @@
+#include <unistd.h>
 #include <iostream>
 #include <boost/filesystem.hpp>
 #include <libconfig.h++>
@@ -13,32 +14,23 @@ int main()
     boost::filesystem::path etc_main_config("/etc/sonomkr/sonomkr.conf");
     boost::filesystem::path etc_filters_config("/etc/sonomkr/filters.conf");
 
+    boost::filesystem::create_directory(boost::filesystem::path("/tmp/sonomkr"));
+
+    auto is_root = (geteuid() == 0);
+    std::cout << is_root << std::endl;
     // std::filesystem::path home = getenv("HOME");
 
-    std::string main_config = "./sonomkr.conf";
+    std::string main_config = "./sonmkr.conf";
     std::string filters_config = "./filters.conf";
 
     // Read the file. If there is an error, report it and exit.
-    try {
-        Configuration config(main_config, filters_config);
-        zmqpp::context context;
+    Configuration config(main_config, filters_config);
+    zmqpp::context context;
 
-        MainController* controller = new MainController(&config, &context);
-        controller->start();
-        controller->waitUntilDone();
-        return EXIT_SUCCESS;
-    }
-    catch (const libconfig::FileIOException& fioex) {
-        std::cerr << "I/O error while reading file" << std::endl;
-        return EXIT_FAILURE;
-    }
-    catch (const libconfig::ParseException& pex) {
-        std::cerr << "Parse error at " << pex.getFile() << ":" << pex.getLine()
-                  << " - " << pex.getError() << std::endl;
-        return EXIT_FAILURE;
-    }
-
-    // initialize the 0MQ context
+    MainController* controller = new MainController(&config, &context);
+    controller->start();
+    controller->waitUntilDone();
+    return EXIT_SUCCESS;
 }
 
 /*

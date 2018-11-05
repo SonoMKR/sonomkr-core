@@ -1,25 +1,17 @@
 #include "configuration.h"
 
+#include <iostream>
+
+int ChannelConfig::channel_count = 1;
+
 Configuration::Configuration(std::string main_file_path, std::string filters_file_path) :
     main_file_path_(main_file_path),
     filters_file_path_(filters_file_path)
 {
     filters_config_.readFile(filters_file_path_.c_str());
-    main_config_.readFile(main_file_path_.c_str());
-    setDefault();
-}
+    // main_config_.readFile(main_file_path_.c_str());
 
-void Configuration::readMainConfig(std::string file_path)
-{
-    main_file_path_ = file_path;
-    main_config_.readFile(main_file_path_.c_str());
-    setDefault();
-}
-
-libconfig::Setting &Configuration::getSetting(std::string path)
-{
-    libconfig::Setting &setting = main_config_.lookup(path);
-    return setting;
+    loadConfig(main_file_path_);
 }
 
 libconfig::Setting &Configuration::getFilter(int sample_rate, int base, int frequency)
@@ -40,115 +32,54 @@ libconfig::Setting &Configuration::getAliasingFilter(int sample_rate, int base)
     return setting;
 }
 
-void Configuration::setDefault()
+int Configuration::loadConfig(std::string file_path)
 {
-    libconfig::Setting &root = main_config_.getRoot();
-
-    if (!root.exists("autostart"))
-    {
-        root.add("autostart", libconfig::Setting::TypeBoolean) = false;
+    libconfig::Config config;
+    try {
+        config.readFile(file_path.c_str());
     }
-    if (!root.exists("controllerBind"))
-    {
-        root.add("controllerBind", libconfig::Setting::TypeString) = "tcp://*:6666";
+    catch (const libconfig::FileIOException& fioex) {
+        std::cerr << "I/O error while reading config file : " << file_path << std::endl;
+        return 1;
     }
-
-    if (!root.exists("audio"))
-    {
-        root.add("audio", libconfig::Setting::TypeGroup);
-    }
-    libconfig::Setting &audio = root["audio"];
-
-    if (!audio.exists("soundCard"))
-    {
-        audio.add("soundCard", libconfig::Setting::TypeString) = "hw:0,0";
-    }
-    if (!audio.exists("availableChannels"))
-    {
-        audio.add("availableChannels", libconfig::Setting::TypeInt) = 2;
-    }
-    if (!audio.exists("sampleRate"))
-    {
-        audio.add("sampleRate", libconfig::Setting::TypeInt) = 44100;
-    }
-    if (!audio.exists("bitDepth"))
-    {
-        audio.add("bitDepth", libconfig::Setting::TypeInt) = 16;
-    }
-    if (!audio.exists("periods"))
-    {
-        audio.add("periods", libconfig::Setting::TypeInt) = 4;
-    }
-    if (!audio.exists("periods"))
-    {
-        audio.add("periods", libconfig::Setting::TypeInt) = 4096;
-    }
-    if (!audio.exists("publishBind"))
-    {
-        audio.add("publishBind", libconfig::Setting::TypeString) = "tcp://*:6660";
+    catch (const libconfig::ParseException& pex) {
+        std::cerr << "Parse config error at " << pex.getFile() << ":" << pex.getLine()
+                  << " - " << pex.getError() << std::endl;
+        return 2;
     }
 
-    if (!root.exists("channel1"))
-    {
-        root.add("channel1", libconfig::Setting::TypeGroup);
-    }
-    libconfig::Setting &channel1 = root["channel1"];
+    config.lookupValue(AUTOSTART_PATH, autostart_);
+    config.lookupValue(CONTROLLERBIND_PATH, controller_bind_);
+    
+    config.lookupValue(AUDIO_SOUNDCARD_PATH, audio_.sound_card);
+    config.lookupValue(AUDIO_CHANNELS_PATH, audio_.available_channels);
+    config.lookupValue(AUDIO_SAMPLERATE_PATH, audio_.sample_rate);
+    config.lookupValue(AUDIO_BITDEPTH_PATH, audio_.bit_depth);
+    config.lookupValue(AUDIO_PERIODS_PATH, audio_.periods);
+    config.lookupValue(AUDIO_PERIODSIZE_PATH, audio_.period_size);
+    config.lookupValue(AUDIO_PUBLISH_PATH, audio_.publish_bind);
 
-    if (!channel1.exists("active"))
-    {
-        channel1.add("active", libconfig::Setting::TypeBoolean) = true;
-    }
-    if (!channel1.exists("strategy"))
-    {
-        channel1.add("strategy", libconfig::Setting::TypeString) = "G10";
-    }
-    if (!channel1.exists("fmin"))
-    {
-        channel1.add("fmin", libconfig::Setting::TypeInt) = 12;
-    }
-    if (!channel1.exists("fmax"))
-    {
-        channel1.add("fmin", libconfig::Setting::TypeInt) = 44;
-    }
-    if (!channel1.exists("integrationPeriod"))
-    {
-        channel1.add("integrationPeriod", libconfig::Setting::TypeFloat) = 1.0;
-    }
-    if (!channel1.exists("publishBind"))
-    {
-        channel1.add("publishBind", libconfig::Setting::TypeString) = "tcp://*:6661";
-    }
+    config.lookupValue(CH1_ACTIVE_PATH, channel_1_.active);
+    config.lookupValue(CH1_STRATEGY_PATH, channel_1_.strategy);
+    config.lookupValue(CH1_FMIN_PATH, channel_1_.fmin);
+    config.lookupValue(CH1_FMAX_PATH, channel_1_.fmax);
+    config.lookupValue(CH1_INTEGRATION_PATH, channel_1_.integration_period);
+    config.lookupValue(CH1_SENSITIVITY_PATH, channel_1_.sensitivity);
+    config.lookupValue(CH1_PUBLISH_PATH, channel_1_.publish_bind);
 
-    if (!root.exists("channel2"))
-    {
-        root.add("channel2", libconfig::Setting::TypeGroup);
-    }
-    libconfig::Setting &channel2 = root["channel2"];
+    config.lookupValue(CH2_ACTIVE_PATH, channel_2_.active);
+    config.lookupValue(CH2_STRATEGY_PATH, channel_2_.strategy);
+    config.lookupValue(CH2_FMIN_PATH, channel_2_.fmin);
+    config.lookupValue(CH2_FMAX_PATH, channel_2_.fmax);
+    config.lookupValue(CH2_INTEGRATION_PATH, channel_2_.integration_period);
+    config.lookupValue(CH2_SENSITIVITY_PATH, channel_2_.sensitivity);
+    config.lookupValue(CH2_PUBLISH_PATH, channel_2_.publish_bind);
 
-    if (!channel2.exists("active"))
+    if (!channel_2_.active && ! channel_1_.active)
     {
-        channel2.add("active", libconfig::Setting::TypeBoolean) = true;
-    }
-    if (!channel1.exists("strategy"))
-    {
-        channel1.add("strategy", libconfig::Setting::TypeString) = "G10";
-    }
-    if (!channel2.exists("fmin"))
-    {
-        channel2.add("fmin", libconfig::Setting::TypeInt) = 12;
-    }
-    if (!channel2.exists("fmax"))
-    {
-        channel2.add("fmin", libconfig::Setting::TypeInt) = 44;
-    }
-    if (!channel2.exists("integrationPeriod"))
-    {
-        channel2.add("integrationPeriod", libconfig::Setting::TypeFloat) = 1.0;
-    }
-    if (!channel2.exists("publishBind"))
-    {
-        channel2.add("publishBind", libconfig::Setting::TypeString) = "tcp://*:6662";
+        std::cerr << "Parse config error : Both channels are inactive" << std::endl;
+        return 3;
     }
 
-    main_config_.writeFile(main_file_path_.c_str());
+    return 0;
 }
