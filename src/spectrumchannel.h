@@ -30,8 +30,8 @@ private:
     float integration_period_;
     RingBuffer* input_buffer_;
     std::vector<Leq> leqs_;
-    std::vector<AntiAliasingFilter*> _aliasingFilters;
-    
+    std::vector<AntiAliasingFilter*> aliasing_filters_;
+
     int processData(unsigned long readPosition);
 
     std::chrono::system_clock::time_point last_time_;

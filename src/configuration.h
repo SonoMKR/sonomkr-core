@@ -41,20 +41,19 @@ struct AudioConfig
 
 struct ChannelConfig
 {
-    static int channel_count;
-  
-    bool active = true;
-    std::string strategy = "G10";
-    int fmin = 12;
-    int fmax = 44;
-    float integration_period = 1.0;
-    float sensitivity = 0.5; // mv/Pa
-    std::string publish_bind;
-    ChannelConfig() {
-      publish_bind = "ipc:///tmp/sonomkr/channel" + std::to_string(channel_count);
-      ChannelConfig::channel_count++;
-      std::cout << publish_bind << std::endl;
-    }
+  static int channel_count;
+
+  bool active = true;
+  std::string strategy = "G10";
+  int fmin = 12;
+  int fmax = 44;
+  float integration_period = 1.0;
+  float sensitivity = 0.5; // mv/Pa
+  std::string publish_bind;
+  ChannelConfig() {
+    publish_bind = "ipc:///tmp/sonomkr/channel" + std::to_string(channel_count);
+    ChannelConfig::channel_count++;
+  }
 };
 
 class Configuration

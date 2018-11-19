@@ -2,7 +2,7 @@
 
 RingBuffer::RingBuffer(const int &size) :
     buffer_size_(size),
-    ms_timeout_(100),
+    ms_timeout_(10),
     write_position_(0)
 {
     buffer_ = new float[buffer_size_];

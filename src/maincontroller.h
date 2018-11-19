@@ -27,6 +27,12 @@ class MainController
     zmqpp::context *zmq_context_;
     zmqpp::socket zmq_req_socket_;
 
+    void initialize();
+    void cleanup();
+
+    void sendResponse(int status, const char *message);
+    void sendResponseBody(int status, const char *message, const char *body);
+
   public:
     MainController(Configuration *config, zmqpp::context *zmq);
     ~MainController();

@@ -8,7 +8,18 @@ Configuration::Configuration(std::string main_file_path, std::string filters_fil
     main_file_path_(main_file_path),
     filters_file_path_(filters_file_path)
 {
-    filters_config_.readFile(filters_file_path_.c_str());
+    try {
+        filters_config_.readFile(filters_file_path_.c_str());
+    }
+    catch (const libconfig::FileIOException& fioex) {
+        std::cerr << "I/O error while reading config file : " << filters_file_path_ << std::endl;
+        exit(1);
+    }
+    catch (const libconfig::ParseException& pex) {
+        std::cerr << "Parse config error at " << pex.getFile() << ":" << pex.getLine()
+                  << " - " << pex.getError() << std::endl;
+        exit(2);
+    }
     // main_config_.readFile(main_file_path_.c_str());
 
     loadConfig(main_file_path_);
@@ -50,7 +61,7 @@ int Configuration::loadConfig(std::string file_path)
 
     config.lookupValue(AUTOSTART_PATH, autostart_);
     config.lookupValue(CONTROLLERBIND_PATH, controller_bind_);
-    
+
     config.lookupValue(AUDIO_SOUNDCARD_PATH, audio_.sound_card);
     config.lookupValue(AUDIO_CHANNELS_PATH, audio_.available_channels);
     config.lookupValue(AUDIO_SAMPLERATE_PATH, audio_.sample_rate);

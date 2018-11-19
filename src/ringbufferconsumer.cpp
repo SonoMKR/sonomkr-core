@@ -15,7 +15,9 @@ RingBufferConsumer::RingBufferConsumer(RingBuffer *buffer, int size_to_read) :
 RingBufferConsumer::~RingBufferConsumer()
 {
     do_read_ = false;
-    read_thread_.join();
+    if (read_thread_.joinable()) {
+        read_thread_.join();
+    }
 }
 
 void RingBufferConsumer::run()
@@ -52,10 +54,14 @@ void RingBufferConsumer::start()
 void RingBufferConsumer::stop()
 {
     do_read_ = false;
-    read_thread_.detach();
+    if (read_thread_.joinable()) {
+        read_thread_.join();
+    }
 }
 
 void RingBufferConsumer::waitUntilDone()
 {
-    read_thread_.join();
+    if (read_thread_.joinable()) {
+        read_thread_.join();
+    }
 }

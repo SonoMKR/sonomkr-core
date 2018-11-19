@@ -20,7 +20,9 @@ AudioCapture::AudioCapture(Configuration *config, AudioBuffer *audio_buffer) :
 AudioCapture::~AudioCapture()
 {
     do_capture_ = false;
-    capture_thread_.join();
+    if (capture_thread_.joinable()) {
+        capture_thread_.join();
+    }
 }
 
 void AudioCapture::run()
@@ -73,6 +75,9 @@ void AudioCapture::start()
 void AudioCapture::stop()
 {
     do_capture_ = false;
+    if (capture_thread_.joinable()) {
+        capture_thread_.join();
+    }
 }
 
 snd_pcm_t *AudioCapture::open_pcm()

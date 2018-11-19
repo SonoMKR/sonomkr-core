@@ -17,6 +17,7 @@ IirFilter::IirFilter(libconfig::Setting &filter_config)
 
 IirFilter::~IirFilter()
 {
+    delete[] filters_;
 }
 
 double IirFilter::filter(double sample)

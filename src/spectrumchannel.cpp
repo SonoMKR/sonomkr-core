@@ -48,6 +48,17 @@ SpectrumChannel::SpectrumChannel(Configuration* config, int channel,
 
 SpectrumChannel::~SpectrumChannel()
 {
+    for (int i = 0; i < aliasing_filters_.size(); i++)
+    {
+        aliasing_filters_[i]->stop();
+        delete aliasing_filters_[i];
+    }
+    for (int i = 0; i < leqs_.size(); i++)
+    {
+        leqs_[i].filter->stop();
+        delete leqs_[i].filter;
+    }
+    delete[] spectrum_buffer_;
     zmq_pub_socket_.close();
 }
 
@@ -99,9 +110,9 @@ void SpectrumChannel::newSpectrum(std::string spectrum_str)
 
 void SpectrumChannel::start()
 {
-    for (int i = 0; i < _aliasingFilters.size(); i++)
+    for (int i = 0; i < aliasing_filters_.size(); i++)
     {
-        _aliasingFilters[i]->start();
+        aliasing_filters_[i]->start();
     }
     for (int i = 0; i < leqs_.size(); i++)
     {
@@ -112,9 +123,9 @@ void SpectrumChannel::start()
 
 void SpectrumChannel::stop()
 {
-    for (int i = 0; i < _aliasingFilters.size(); i++)
+    for (int i = 0; i < aliasing_filters_.size(); i++)
     {
-        _aliasingFilters[i]->stop();
+        aliasing_filters_[i]->stop();
     }
     for (int i = 0; i < leqs_.size(); i++)
     {
@@ -127,17 +138,17 @@ void SpectrumChannel::applyG10Strategy()
 {
     if (fmin_ < FREQ_2kHz && (sample_rate_ % 10 == 0))
     {
-        _aliasingFilters.push_back(new AntiAliasingFilter(input_buffer_, size_to_read_, sample_rate_,
+        aliasing_filters_.push_back(new AntiAliasingFilter(input_buffer_, size_to_read_, sample_rate_,
                                                           config_->getAliasingFilter(sample_rate_, 10)));
     }
     if (fmin_ < FREQ_200Hz && (sample_rate_ % 100 == 0))
     {
-        _aliasingFilters.push_back(new AntiAliasingFilter(_aliasingFilters[0]->getOutputBuffer(),
+        aliasing_filters_.push_back(new AntiAliasingFilter(aliasing_filters_[0]->getOutputBuffer(),
                                                           size_to_read_ / 10, sample_rate_ / 10, config_->getAliasingFilter(sample_rate_, 10)));
     }
     if (fmin_ < FREQ_20Hz && (sample_rate_ % 1000 == 0))
     {
-        _aliasingFilters.push_back(new AntiAliasingFilter(_aliasingFilters[1]->getOutputBuffer(),
+        aliasing_filters_.push_back(new AntiAliasingFilter(aliasing_filters_[1]->getOutputBuffer(),
                                                           size_to_read_ / 100, sample_rate_ / 100, config_->getAliasingFilter(sample_rate_, 10)));
     }
 
@@ -154,7 +165,7 @@ void SpectrumChannel::applyG10Strategy()
         {
             leqs_.push_back(Leq{
                 freq,
-                new LeqFilter(_aliasingFilters[0]->getOutputBuffer(), size_to_read_ / 10, sample_rate_ / 10,
+                new LeqFilter(aliasing_filters_[0]->getOutputBuffer(), size_to_read_ / 10, sample_rate_ / 10,
                               integration_period_, config_->getFilter(sample_rate_, 10, freq + 10))});
         }
         else if (freq >= FREQ_20Hz)
@@ -163,14 +174,14 @@ void SpectrumChannel::applyG10Strategy()
             {
                 leqs_.push_back(Leq{
                     freq,
-                    new LeqFilter(_aliasingFilters[1]->getOutputBuffer(), size_to_read_ / 100, sample_rate_ / 100,
+                    new LeqFilter(aliasing_filters_[1]->getOutputBuffer(), size_to_read_ / 100, sample_rate_ / 100,
                                   integration_period_, config_->getFilter(sample_rate_, 10, freq + 20))});
             }
             else if (freq >= FREQ_80Hz)
             {
                 leqs_.push_back(Leq{
                     freq,
-                    new LeqFilter(_aliasingFilters[0]->getOutputBuffer(), size_to_read_ / 10, sample_rate_ / 10,
+                    new LeqFilter(aliasing_filters_[0]->getOutputBuffer(), size_to_read_ / 10, sample_rate_ / 10,
                                   integration_period_, config_->getFilter(sample_rate_, 10, freq + 10))});
             }
         }
@@ -180,14 +191,14 @@ void SpectrumChannel::applyG10Strategy()
             {
                 leqs_.push_back(Leq{
                     freq,
-                    new LeqFilter(_aliasingFilters[2]->getOutputBuffer(), size_to_read_ / 1000, sample_rate_ / 1000,
+                    new LeqFilter(aliasing_filters_[2]->getOutputBuffer(), size_to_read_ / 1000, sample_rate_ / 1000,
                                   integration_period_, config_->getFilter(sample_rate_, 10, freq + 30))});
             }
             else if (freq >= FREQ_8Hz)
             {
                 leqs_.push_back(Leq{
                     freq,
-                    new LeqFilter(_aliasingFilters[1]->getOutputBuffer(), size_to_read_ / 100, sample_rate_ / 100,
+                    new LeqFilter(aliasing_filters_[1]->getOutputBuffer(), size_to_read_ / 100, sample_rate_ / 100,
                                   integration_period_, config_->getFilter(sample_rate_, 10, freq + 20))});
             }
         }

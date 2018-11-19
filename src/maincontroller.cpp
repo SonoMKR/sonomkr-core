@@ -1,6 +1,7 @@
 #include "maincontroller.h"
 
 #include <iostream>
+#include <boost/filesystem.hpp>
 
 #include "audiobuffer.h"
 #include "audiocapture.h"
@@ -17,10 +18,25 @@ MainController::MainController(Configuration *config, zmqpp::context *zmq) :
     std::string endpoint = config_->controller_bind_;
     zmq_req_socket_.bind(endpoint.c_str());
 
-    audio_buffer_ = new AudioBuffer(config_, zmq);
+    initialize();
+}
+
+MainController::~MainController()
+{
+    do_run_ = false;
+    if (run_thread_.joinable()) {
+        run_thread_.join();
+    }
+    zmq_req_socket_.close();
+
+    cleanup();
+}
+
+void MainController::initialize()
+{
+    audio_buffer_ = new AudioBuffer(config_, zmq_context_);
     audio_capture_ = new AudioCapture(config_, audio_buffer_);
-    //    SineGenerator* sine = new SineGenerator(2000.0, 44100);
-    //    sine->start();
+    audio_capture_->start();
 
     is_ch1_active_ = config_->channel_1_.active;
     is_ch2_active_ = config_->channel_2_.active;
@@ -46,22 +62,22 @@ MainController::MainController(Configuration *config, zmqpp::context *zmq) :
     }
 }
 
-MainController::~MainController()
+void MainController::cleanup()
 {
-    do_run_ = false;
-    run_thread_.join();
-    zmq_req_socket_.close();
-
     if (is_ch1_active_)
     {
         delete channel1_;
+        channel1_ = nullptr;
     }
     if (is_ch2_active_)
     {
         delete channel2_;
+        channel2_ = nullptr;
     }
     delete audio_capture_;
+    audio_capture_ = nullptr;
     delete audio_buffer_;
+    audio_buffer_ = nullptr;
 }
 
 void MainController::startChannels()
@@ -117,30 +133,161 @@ void MainController::run()
     while (do_run_)
     {
         zmqpp::message msg;
-        zmq_req_socket_.receive(msg);
+        try {
+            zmq_req_socket_.receive(msg);
+        }
+        catch (const std::exception& e) {
+            std::cerr << "Zmq socket receive error : " << e.what() << std::endl;
+        }
         if (!do_run_)
         {
             break;
         }
-        std::cout << msg.get(0) << std::endl;
-        if (msg.get(0) == "startAll")
-        {
-            startChannels();
-            std::cout << "START ALL" << std::endl;
+        int num_parts = msg.parts();
+        if (num_parts < 1) {
+            sendResponse(400, "Not enough message parts");
+            continue;
         }
-        if (msg.get(0) == "stopAll")
+        std::string first_part = msg.get(0);
+        if (first_part == "START" || first_part == "STOP")
         {
+            if (num_parts < 2) {
+                sendResponse(400, "Not enough message parts");
+                continue;
+            }
+            std::string channel = msg.get(1);
+            if (channel == "ALL") {
+                if (first_part == "START") {
+                    startChannels();
+                }
+                else if (first_part == "STOP") {
+                    stopChannels();
+                }
+                sendResponse(200, "OK");
+                continue;
+            }
+            else if (channel == "1" || channel == "2") {
+                int channel_num = std::stoi( channel );
+                if (first_part == "START") {
+                    startChannel(channel_num);
+                }
+                else if (first_part == "STOP") {
+                    stopChannel(channel_num);
+                }
+                sendResponse(200, "OK");
+                continue;
+            }
+            sendResponse(400, "Bad Request");
+            continue;
+        }
+        if (first_part == "LOAD")
+        {
+            if (num_parts < 2) {
+                sendResponse(400, "Not enough message parts");
+                continue;
+            }
+            boost::filesystem::path path(msg.get(1));
+            if (!boost::filesystem::is_regular_file(path) || !path.is_absolute()) {
+                sendResponse(400, "File not found or is not an absolute path");
+                continue;
+            }
             stopChannels();
-            std::cout << "STOP ALL" << std::endl;
+            cleanup();
+            if (config_->loadConfig(path.string()) > 0) {
+                sendResponse(400, "Config file not found or unable to parse");
+            }
+            else {
+                sendResponse(200, "OK");
+            }
+            initialize();
+            startChannels();
+            continue;
         }
-        zmq_req_socket_.send("200 OK");
+        if (first_part == "GET")
+        {
+            if (num_parts < 3) {
+                sendResponse(400, "Not enough message parts");
+                continue;
+            }
+            std::string channel = msg.get(1);
+            std::string setting = msg.get(2);
+            ChannelConfig channel_config;
+            if (channel == "1")
+            {
+                channel_config = config_->channel_1_;
+            }
+            else if (channel == "2") {
+                channel_config = config_->channel_1_;
+            }
+            else {
+                sendResponse(400, "Channel number must be 1 or 2");
+                continue;
+            }
+            if (setting == "ACTIVE") {
+                sendResponseBody(200, "OK", std::to_string(channel_config.active).c_str());
+                continue;
+            }
+            if (setting == "FMIN") {
+                sendResponseBody(200, "OK", std::to_string(channel_config.fmin).c_str());
+                continue;
+            }
+            if (setting == "FMAX") {
+                sendResponseBody(200, "OK", std::to_string(channel_config.fmax).c_str());
+                continue;
+            }
+            if (setting == "PERIOD") {
+                sendResponseBody(200, "OK", std::to_string(channel_config.integration_period).c_str());
+                continue;
+            }
+            if (setting == "SENSITIVITY") {
+                sendResponseBody(200, "OK", std::to_string(channel_config.sensitivity).c_str());
+                continue;
+            }
+            sendResponse(400, "Setting must be 'ACTIVE', 'FMIN', 'FMAX', 'PERIOD' or 'SENSITIVITY'");
+            continue;
+        }
+        if (first_part == "SET")
+        {
+            if (num_parts < 4) {
+                sendResponse(400, "Not enough message parts");
+                continue;
+            }
+        }
+        sendResponse(400, "Bad Request");
+        continue;
+    }
+}
+
+void MainController::sendResponse(int status, const char *message)
+{
+    zmqpp::message msg;
+    msg.add(std::to_string(status));
+    msg.add(message);
+    try {
+        zmq_req_socket_.send(msg);
+    }
+    catch (const std::exception& e) {
+        std::cerr << "Zmq socket send error : " << e.what() << std::endl;
+    }
+}
+
+void MainController::sendResponseBody(int status, const char *message, const char *body)
+{
+    zmqpp::message msg;
+    msg.add(std::to_string(status));
+    msg.add(message);
+    msg.add(body);
+    try {
+        zmq_req_socket_.send(msg);
+    }
+    catch (const std::exception& e) {
+        std::cerr << "Zmq socket send error : " << e.what() << std::endl;
     }
 }
 
 void MainController::start()
 {
     do_run_ = true;
-    audio_capture_->start();
     bool autostart = config_->autostart_;
     if (autostart)
     {
@@ -153,6 +300,9 @@ void MainController::stop()
 {
     stopChannels();
     audio_capture_->stop();
+    if (run_thread_.joinable()) {
+        run_thread_.join();
+    }
 }
 
 void MainController::exit()
@@ -163,5 +313,9 @@ void MainController::exit()
 
 void MainController::waitUntilDone()
 {
-    run_thread_.join();
+    if (run_thread_.joinable()) {
+        run_thread_.join();
+    }
 }
+
+

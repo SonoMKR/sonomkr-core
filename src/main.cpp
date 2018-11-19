@@ -20,7 +20,7 @@ int main()
     std::cout << is_root << std::endl;
     // std::filesystem::path home = getenv("HOME");
 
-    std::string main_config = "./sonmkr.conf";
+    std::string main_config = "./sonomkr.conf";
     std::string filters_config = "./filters.conf";
 
     // Read the file. If there is an error, report it and exit.
