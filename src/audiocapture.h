@@ -28,13 +28,17 @@ class AudioCapture
     bool do_capture_;
 
     snd_pcm_t *open_pcm();
+    void run();
 
   public:
     AudioCapture(Configuration *config, AudioBuffer *audioBuffer);
     ~AudioCapture();
-    void run();
-    void start();
+    void start(bool restart = false);
     void stop();
+
+    inline bool isRunning() const {
+      return do_capture_;
+    }
 };
 
 #endif // AUDIOCAPTURE_H

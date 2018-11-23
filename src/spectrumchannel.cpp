@@ -108,17 +108,21 @@ void SpectrumChannel::newSpectrum(std::string spectrum_str)
     zmq_pub_socket_.send(msg);
 }
 
-void SpectrumChannel::start()
+void SpectrumChannel::start(bool restart)
 {
+    if (isRunning())
+    {
+        stop();
+    }
     for (int i = 0; i < aliasing_filters_.size(); i++)
     {
-        aliasing_filters_[i]->start();
+        aliasing_filters_[i]->start(restart);
     }
     for (int i = 0; i < leqs_.size(); i++)
     {
-        leqs_[i].filter->start();
+        leqs_[i].filter->start(restart);
     }
-    RingBufferConsumer::start();
+    RingBufferConsumer::start(restart);
 }
 
 void SpectrumChannel::stop()

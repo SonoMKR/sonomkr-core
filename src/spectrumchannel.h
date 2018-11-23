@@ -52,17 +52,14 @@ public:
                     zmqpp::context* zmq_context);
     ~SpectrumChannel();
     void run();
-    void start();
+    void start(bool restart = false);
     void stop();
 
-    inline int getMinFreq() {
+    inline int getMinFreq() const {
         return fmin_;
     }
-    inline int getMaxFreq() {
+    inline int getMaxFreq() const {
         return fmax_;
-    }
-    inline bool isActive() {
-        return do_read_;
     }
 };
 

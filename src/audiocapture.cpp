@@ -66,8 +66,15 @@ void AudioCapture::run()
     free(period_buf_);
 }
 
-void AudioCapture::start()
+void AudioCapture::start(bool restart)
 {
+    if (do_capture_) {
+        if (restart) {
+            stop();
+        } else {
+            return;
+        }
+    }
     do_capture_ = true;
     capture_thread_ = std::thread(&AudioCapture::run, this);
 }

@@ -80,27 +80,27 @@ void MainController::cleanup()
     audio_buffer_ = nullptr;
 }
 
-void MainController::startChannels()
+void MainController::startChannels(bool restart)
 {
     if (is_ch1_active_)
     {
-        channel1_->start();
+        channel1_->start(restart);
     }
     if (is_ch2_active_)
     {
-        channel2_->start();
+        channel2_->start(restart);
     }
 }
 
-void MainController::startChannel(int channel)
+void MainController::startChannel(int channel, bool restart)
 {
     if (channel == 1 && is_ch1_active_)
     {
-        channel1_->start();
+        channel1_->start(restart);
     }
     if (channel == 2 && is_ch2_active_)
     {
-        channel2_->start();
+        channel2_->start(restart);
     }
 }
 
@@ -158,7 +158,7 @@ void MainController::run()
             std::string channel = msg.get(1);
             if (channel == "ALL") {
                 if (first_part == "START") {
-                    startChannels();
+                    startChannels(true);
                 }
                 else if (first_part == "STOP") {
                     stopChannels();
@@ -169,7 +169,7 @@ void MainController::run()
             else if (channel == "1" || channel == "2") {
                 int channel_num = std::stoi( channel );
                 if (first_part == "START") {
-                    startChannel(channel_num);
+                    startChannel(channel_num, true);
                 }
                 else if (first_part == "STOP") {
                     stopChannel(channel_num);
@@ -180,7 +180,7 @@ void MainController::run()
             sendResponse(400, "Bad Request");
             continue;
         }
-        if (first_part == "LOAD")
+        else if (first_part == "LOAD")
         {
             if (num_parts < 2) {
                 sendResponse(400, "Not enough message parts");
@@ -200,10 +200,10 @@ void MainController::run()
                 sendResponse(200, "OK");
             }
             initialize();
-            startChannels();
+            startChannels(true);
             continue;
         }
-        if (first_part == "GET")
+        else if (first_part == "GET")
         {
             if (num_parts < 3) {
                 sendResponse(400, "Not enough message parts");
@@ -246,12 +246,51 @@ void MainController::run()
             sendResponse(400, "Setting must be 'ACTIVE', 'FMIN', 'FMAX', 'PERIOD' or 'SENSITIVITY'");
             continue;
         }
-        if (first_part == "SET")
+        else if (first_part == "SET")
         {
             if (num_parts < 4) {
                 sendResponse(400, "Not enough message parts");
                 continue;
             }
+            std::string channel = msg.get(1);
+            std::string setting = msg.get(2);
+            std::string value = msg.get(3);
+            ChannelConfig channel_config;
+            if (channel == "1")
+            {
+                channel_config = config_->channel_1_;
+            }
+            else if (channel == "2") {
+                channel_config = config_->channel_1_;
+            }
+            else {
+                sendResponse(400, "Channel number must be 1 or 2");
+                continue;
+            }
+            if (setting == "ACTIVE") {
+                sendResponseBody(200, "OK", std::to_string(channel_config.active).c_str());
+                continue;
+            }
+            if (setting == "FMIN") {
+                sendResponseBody(200, "OK", std::to_string(channel_config.fmin).c_str());
+                continue;
+            }
+            if (setting == "FMAX") {
+                sendResponseBody(200, "OK", std::to_string(channel_config.fmax).c_str());
+                continue;
+            }
+            if (setting == "PERIOD") {
+                sendResponseBody(200, "OK", std::to_string(channel_config.integration_period).c_str());
+                continue;
+            }
+            if (setting == "SENSITIVITY") {
+                sendResponseBody(200, "OK", std::to_string(channel_config.sensitivity).c_str());
+                continue;
+            }
+        }
+        else {
+            sendResponse(404, "Action must be 'START', 'STOP', 'LOAD', 'SET' or 'GET'");
+            continue;
         }
         sendResponse(400, "Bad Request");
         continue;

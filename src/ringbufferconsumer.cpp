@@ -45,8 +45,15 @@ void RingBufferConsumer::run()
     //    cout << "end thread : " << this << endl;
 }
 
-void RingBufferConsumer::start()
+void RingBufferConsumer::start(bool restart)
 {
+    if (do_read_) {
+        if (restart) {
+            stop();
+        } else {
+            return;
+        }
+    }
     do_read_ = true;
     read_thread_ = std::thread(&RingBufferConsumer::run, this);
 }

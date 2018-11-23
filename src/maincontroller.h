@@ -36,8 +36,8 @@ class MainController
   public:
     MainController(Configuration *config, zmqpp::context *zmq);
     ~MainController();
-    void startChannels();
-    void startChannel(int channel);
+    void startChannels(bool restart = false);
+    void startChannel(int channel, bool restart = false);
     void stopChannels();
     void stopChannel(int channel);
 
