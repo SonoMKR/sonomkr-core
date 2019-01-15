@@ -30,16 +30,16 @@ void Spectrum::reset(int lower_freq, int higher_freq, std::chrono::system_clock:
     globals_[GLOBAL_LAeq] = -99.0;
 }
 
-void Spectrum::setLeq(int freq, float value)
+void Spectrum::setLeq(int freq, float value, float correction)
 {
     if (leqs_[freq] == -99.0)
     {
         valid_count_++;
     }
-    leqs_[freq] = value;
+    leqs_[freq] = value + correction;
 }
 
-void Spectrum::setGlobal(int global, float value)
+void Spectrum::setGlobal(int global, float value, float correction)
 {
     globals_[global] = value;
 }
@@ -68,7 +68,7 @@ void Spectrum::calculateGlobals()
     globals_[GLOBAL_LAeq] = 10 * log10(tempSumA);
 }
 
-std::string Spectrum::toString()
+std::string Spectrum::toString() const
 {
     std::stringstream ss;
     std::chrono::milliseconds ms = std::chrono::duration_cast<std::chrono::milliseconds>(time_.time_since_epoch());
@@ -84,7 +84,7 @@ std::string Spectrum::toString()
     for (int freq = lower_freq_; freq <= higher_freq_; freq++)
     {
         ss << freq << ":";
-        ss << leqs_[freq] << ";";
+        ss << leqs_.at(freq) << ";";
     }
     return ss.str();
 }

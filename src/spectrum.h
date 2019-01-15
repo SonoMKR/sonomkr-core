@@ -30,15 +30,15 @@ public:
     Spectrum(int lower_freq, int higher_freq, std::chrono::system_clock::time_point time = std::chrono::system_clock::now());
     void reset(int lower_freq, int higher_freq, std::chrono::system_clock::time_point time = std::chrono::system_clock::now());
 
-    void setLeq(int freq, float value);
-    void setGlobal(int global, float value);
+    void setLeq(int freq, float value, float correction = 0.0);
+    void setGlobal(int global, float value, float correction = 0.0);
     void setTime(std::chrono::system_clock::time_point time);
 
     bool isFull();
     void calculateGlobals();
 
 //    string getHeaderString();
-    std::string toString();
+    std::string toString() const;
 };
 
 namespace spectrum {

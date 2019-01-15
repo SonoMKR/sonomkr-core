@@ -10,23 +10,23 @@ SpectrumChannel::SpectrumChannel(Configuration* config, int channel,
     zmq_pub_socket_(*zmq_context, zmqpp::socket_type::publish)
 {
     sample_rate_ = config_->audio_.sample_rate;
-    std::string publish_bind;
+
+    ChannelConfig channel_config;
     if (channel == 1)
     {
-        strategy_ = config_->channel_1_.strategy;
-        fmin_ = config_->channel_1_.fmin;
-        fmax_ = config_->channel_1_.fmax;
-        integration_period_ = config_->channel_1_.integration_period;
-        publish_bind = config_->channel_1_.publish_bind;
+        channel_config = config_->channel_1_;
     }
     else if (channel == 2)
     {
-        strategy_ = config_->channel_2_.strategy;
-        fmin_ = config_->channel_2_.fmin;
-        fmax_ = config_->channel_2_.fmax;
-        integration_period_ = config_->channel_2_.integration_period;
-        publish_bind = config_->channel_2_.publish_bind;
+        channel_config = config_->channel_2_;
     }
+    strategy_ = channel_config.strategy;
+    fmin_ = channel_config.fmin;
+    fmax_ = channel_config.fmax;
+    integration_period_ = channel_config.integration_period;
+    std::string publish_bind = channel_config.publish_bind;
+    sentivity_correction_ = 20 * log10f(channel_config.sensitivity * 0.00005);
+
     zmq_pub_socket_.bind(publish_bind.c_str());
 
     spectrum_buffer_size_ = int(300 / integration_period_); // allways 300 seconds => 5 min
@@ -82,13 +82,13 @@ int SpectrumChannel::processData(unsigned long readPosition)
             continue;
         }
         float *buffer = leqs_[i].filter->getLeqBuffer();
-        spectrum_buffer_[spectrum_write_position_].setLeq(leqs_[i].freq, buffer[leqReadPosition]);
+        spectrum_buffer_[spectrum_write_position_].setLeq(leqs_[i].freq, buffer[leqReadPosition], sentivity_correction_);
         leqs_[i].filter->endReadLeq(1);
 
         if (spectrum_buffer_[spectrum_write_position_].isFull())
         {
             spectrum_buffer_[spectrum_write_position_].calculateGlobals();
-            newSpectrum(spectrum_buffer_[spectrum_write_position_].toString());
+            emitNewSpectrum(spectrum_buffer_[spectrum_write_position_].toString());
             spectrum_write_position_ = (spectrum_write_position_ + 1) % spectrum_buffer_size_;
             std::chrono::milliseconds increment(int(integration_period_ * 1000));
             last_time_ += increment;
@@ -99,7 +99,7 @@ int SpectrumChannel::processData(unsigned long readPosition)
     return size_to_read_;
 }
 
-void SpectrumChannel::newSpectrum(std::string spectrum_str)
+void SpectrumChannel::emitNewSpectrum(std::string spectrum_str)
 {
     // send topic in first part of the message
     zmqpp::message msg;

@@ -2,6 +2,7 @@
 #define SPECTRUMCHANNEL_H
 
 #include <vector>
+#include <atomic>
 #include <string>
 #include <chrono>
 #include <zmqpp/zmqpp.hpp>
@@ -32,19 +33,21 @@ private:
     std::vector<Leq> leqs_;
     std::vector<AntiAliasingFilter*> aliasing_filters_;
 
-    int processData(unsigned long readPosition);
-
     std::chrono::system_clock::time_point last_time_;
     Spectrum* spectrum_buffer_;
     int spectrum_buffer_size_;
     int spectrum_write_position_;
 
+    std::atomic<float> sentivity_correction_;
+
     zmqpp::context *zmq_context_;
     zmqpp::socket zmq_pub_socket_;
 
-    void newSpectrum(std::string spectrumStr);
     void applyG10Strategy();
     void applyG2Strategy();
+    int processData(unsigned long readPosition);
+
+    void emitNewSpectrum(std::string spectrumStr);
 
 public:
     SpectrumChannel(Configuration* config, int channel,
@@ -54,6 +57,11 @@ public:
     void run();
     void start(bool restart = false);
     void stop();
+
+    inline void setSentivityCorrection(float value)
+    {
+        sentivity_correction_.store(value);
+    }
 
     inline int getMinFreq() const {
         return fmin_;

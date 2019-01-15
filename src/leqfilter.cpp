@@ -36,7 +36,7 @@ int LeqFilter::processData(unsigned long read_position)
 
         if (read_counter_ >= reset_period_)
         {
-            leq_buffer_[leq_write_position_] = 10.0 * log10((sqrt(accumulator_ / read_counter_)));
+            leq_buffer_[leq_write_position_] = 20.0 * log10((sqrt(accumulator_ / read_counter_)));
             leq_write_position_ = (leq_write_position_ + 1) % leq_buffer_size_;
             leq_size_readable_.store(leq_size_readable_.load() + 1);
             read_counter_ %= reset_period_;
