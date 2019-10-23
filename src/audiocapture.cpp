@@ -6,12 +6,13 @@ AudioCapture::AudioCapture(Configuration *config, AudioBuffer *audio_buffer) :
     config_(config),
     audio_buffer_(audio_buffer)
 {
-    bit_depth_ = config_->audio_.bit_depth;
-    pcm_name_ = config_->audio_.sound_card;
-    sample_rate_ = config_->audio_.sample_rate;
-    channels_ = config_->audio_.available_channels;
-    periods_ = config_->audio_.periods;
-    period_size_ = config_->audio_.period_size;
+    AudioConfig* audio_config = config_->getAudioConfig();
+    bit_depth_ = audio_config->bit_depth;
+    pcm_name_ = audio_config->sound_card;
+    sample_rate_ = audio_config->sample_rate;
+    channels_ = audio_config->available_channels;
+    periods_ = audio_config->periods;
+    period_size_ = audio_config->period_size;
 
     sample_size_ = (bit_depth_ == 24) ? (32 / 8) : (bit_depth_ / 8);
     frame_size_ = channels_ * sample_size_;
@@ -46,7 +47,7 @@ void AudioCapture::run()
     schp.sched_priority = sched_get_priority_max(SCHED_FIFO);
     if (int err = sched_setscheduler(0, SCHED_FIFO, &schp) != 0)
     {
-        std::cerr << "Can't set sched_setscheduler (" << err << ") - using normal priority" << std::endl;
+//        std::cerr << "Can't set sched_setscheduler (" << err << ") - using normal priority" << std::endl;
     }
 
     while (do_capture_)

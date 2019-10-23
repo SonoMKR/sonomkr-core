@@ -28,6 +28,8 @@
 #include <iostream>
 #include <libconfig.h++>
 
+using namespace libconfig;
+
 struct AudioConfig
 {
   std::string sound_card = "hw:0,0";
@@ -48,7 +50,7 @@ struct ChannelConfig
   int fmin = 12;
   int fmax = 44;
   float integration_period = 1.0;
-  float sensitivity = 0.5; // mv/Pa
+  float sensitivity = 50.0; // mv/Unit
   std::string publish_bind;
   ChannelConfig() {
     publish_bind = "ipc:///tmp/sonomkr/channel" + std::to_string(channel_count);
@@ -59,23 +61,32 @@ struct ChannelConfig
 class Configuration
 {
   private:
-    libconfig::Config main_config_;
+    libconfig::Config current_config_;
     libconfig::Config filters_config_;
     std::string main_file_path_;
     std::string filters_file_path_;
 
-  public:
+    AudioConfig* audio_;
+    ChannelConfig* channel_1_;
+    ChannelConfig* channel_2_;
+
+    void initConfig(Config &config);
+
+public:
     Configuration(std::string main_file_path, std::string filters_file_path);
+    ~Configuration();
     libconfig::Setting &getFilter(int sample_rate, int base, int frequency);
     libconfig::Setting &getAliasingFilter(int sample_rate, int base);
 
     int loadConfig(std::string file_path);
+    int saveCurrentConfig(std::string file_path = "");
 
     bool autostart_ = true;
     std::string controller_bind_ = "ipc:///tmp/sonomkr/controller";
-    AudioConfig audio_;
-    ChannelConfig channel_1_;
-    ChannelConfig channel_2_;
+
+    inline AudioConfig* getAudioConfig() { return audio_; }
+    inline ChannelConfig* getChannel1Config() { return channel_1_; }
+    inline ChannelConfig* getChannel2Config() { return channel_2_; }
 };
 
 #endif // CONFIGURATION_H

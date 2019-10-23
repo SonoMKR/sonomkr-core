@@ -9,18 +9,18 @@ AudioBuffer::AudioBuffer(Configuration *config, zmqpp::context* zmq) :
     _lastTime = 0.0;
 #endif
 
-    zmq_pub_socket_.bind(config_->audio_.publish_bind.c_str());
+    zmq_pub_socket_.bind(config_->getAudioConfig()->publish_bind.c_str());
 
-    int sample_rate = config_->audio_.sample_rate;
+    int sample_rate = config_->getAudioConfig()->sample_rate;
     buffer_size_ = sample_rate * 30;
 
     nb_channels_ = 0;
-    if (config_->channel_1_.active)
+    if (config_->getChannel1Config()->active)
     {
         channel_buffers_.push_back(new RingBuffer(buffer_size_));
         nb_channels_++;
     }
-    if (config_->channel_2_.active)
+    if (config_->getChannel2Config()->active)
     {
         channel_buffers_.push_back(new RingBuffer(buffer_size_));
         nb_channels_++;

@@ -38,8 +38,8 @@ void MainController::initialize()
     audio_capture_ = new AudioCapture(config_, audio_buffer_);
     audio_capture_->start();
 
-    is_ch1_active_ = config_->channel_1_.active;
-    is_ch2_active_ = config_->channel_2_.active;
+    is_ch1_active_ = config_->getChannel1Config()->active;
+    is_ch2_active_ = config_->getChannel2Config()->active;
 
     int channel_count = 0;
     if (is_ch1_active_)
@@ -211,39 +211,43 @@ void MainController::run()
             }
             std::string channel = msg.get(1);
             std::string setting = msg.get(2);
-            ChannelConfig channel_config;
+            ChannelConfig* channel_config;
             if (channel == "1")
             {
-                channel_config = config_->channel_1_;
+                channel_config = config_->getChannel1Config();
             }
             else if (channel == "2") {
-                channel_config = config_->channel_1_;
+                channel_config = config_->getChannel2Config();
             }
             else {
-                sendResponse(400, "Channel number must be 1 or 2");
+                sendResponse(404, "Channel number must be 1 or 2");
                 continue;
             }
             if (setting == "ACTIVE") {
-                sendResponseBody(200, "OK", std::to_string(channel_config.active).c_str());
+                sendResponseBody(200, "OK", std::to_string(channel_config->active).c_str());
                 continue;
             }
             if (setting == "FMIN") {
-                sendResponseBody(200, "OK", std::to_string(channel_config.fmin).c_str());
+                sendResponseBody(200, "OK", std::to_string(channel_config->fmin).c_str());
                 continue;
             }
             if (setting == "FMAX") {
-                sendResponseBody(200, "OK", std::to_string(channel_config.fmax).c_str());
+                sendResponseBody(200, "OK", std::to_string(channel_config->fmax).c_str());
                 continue;
             }
             if (setting == "PERIOD") {
-                sendResponseBody(200, "OK", std::to_string(channel_config.integration_period).c_str());
+                sendResponseBody(200, "OK", std::to_string(channel_config->integration_period).c_str());
                 continue;
             }
             if (setting == "SENSITIVITY") {
-                sendResponseBody(200, "OK", std::to_string(channel_config.sensitivity).c_str());
+                sendResponseBody(200, "OK", std::to_string(channel_config->sensitivity).c_str());
                 continue;
             }
-            sendResponse(400, "Setting must be 'ACTIVE', 'FMIN', 'FMAX', 'PERIOD' or 'SENSITIVITY'");
+            if (setting == "ZMQ") {
+                sendResponseBody(200, "OK", channel_config->publish_bind.c_str());
+                continue;
+            }
+            sendResponse(404, "Setting must be 'ACTIVE', 'FMIN', 'FMAX', 'PERIOD', 'ZMQ' or 'SENSITIVITY'");
             continue;
         }
         else if (first_part == "SET")
@@ -255,38 +259,33 @@ void MainController::run()
             std::string channel = msg.get(1);
             std::string setting = msg.get(2);
             std::string value = msg.get(3);
-            ChannelConfig channel_config;
+            ChannelConfig* channel_config;
             if (channel == "1")
             {
-                channel_config = config_->channel_1_;
+                channel_config = config_->getChannel1Config();
             }
             else if (channel == "2") {
-                channel_config = config_->channel_1_;
+                channel_config = config_->getChannel2Config();
             }
             else {
-                sendResponse(400, "Channel number must be 1 or 2");
-                continue;
-            }
-            if (setting == "ACTIVE") {
-                sendResponseBody(200, "OK", std::to_string(channel_config.active).c_str());
-                continue;
-            }
-            if (setting == "FMIN") {
-                sendResponseBody(200, "OK", std::to_string(channel_config.fmin).c_str());
-                continue;
-            }
-            if (setting == "FMAX") {
-                sendResponseBody(200, "OK", std::to_string(channel_config.fmax).c_str());
-                continue;
-            }
-            if (setting == "PERIOD") {
-                sendResponseBody(200, "OK", std::to_string(channel_config.integration_period).c_str());
+                sendResponse(404, "Channel number must be 1 or 2");
                 continue;
             }
             if (setting == "SENSITIVITY") {
-                sendResponseBody(200, "OK", std::to_string(channel_config.sensitivity).c_str());
+                float sens = float(std::stod(value));
+                channel_config->sensitivity = sens;
+                if (channel == "1") {
+                    channel1_->setSentivityCorrection(20 * log10f(sens * 0.05));
+                }
+                else if (channel == "2") {
+                    channel2_->setSentivityCorrection(20 * log10f(sens * 0.05));
+                }
+                config_->saveCurrentConfig();
+                sendResponseBody(200, "OK", std::to_string(channel_config->sensitivity).c_str());
                 continue;
             }
+            sendResponse(404, "Setting must be 'SENSITIVITY'");
+            continue;
         }
         else {
             sendResponse(404, "Action must be 'START', 'STOP', 'LOAD', 'SET' or 'GET'");

@@ -9,23 +9,23 @@ SpectrumChannel::SpectrumChannel(Configuration* config, int channel,
     zmq_context_(zmq_context),
     zmq_pub_socket_(*zmq_context, zmqpp::socket_type::publish)
 {
-    sample_rate_ = config_->audio_.sample_rate;
+    sample_rate_ = config_->getAudioConfig()->sample_rate;
 
-    ChannelConfig channel_config;
+    ChannelConfig* channel_config;
     if (channel == 1)
     {
-        channel_config = config_->channel_1_;
+        channel_config = config_->getChannel1Config();
     }
     else if (channel == 2)
     {
-        channel_config = config_->channel_2_;
+        channel_config = config_->getChannel2Config();
     }
-    strategy_ = channel_config.strategy;
-    fmin_ = channel_config.fmin;
-    fmax_ = channel_config.fmax;
-    integration_period_ = channel_config.integration_period;
-    std::string publish_bind = channel_config.publish_bind;
-    sentivity_correction_ = 20 * log10f(channel_config.sensitivity * 0.00005);
+    strategy_ = channel_config->strategy;
+    fmin_ = channel_config->fmin;
+    fmax_ = channel_config->fmax;
+    integration_period_ = channel_config->integration_period;
+    std::string publish_bind = channel_config->publish_bind;
+    sentivity_correction_ = 20 * log10f(channel_config->sensitivity * 0.05);
 
     zmq_pub_socket_.bind(publish_bind.c_str());
 
