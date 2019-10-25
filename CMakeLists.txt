@@ -35,3 +35,8 @@ link_libraries(${PKG_LDFLAGS} "-pthread")
 
 add_executable(sonomkr-core ${SRC})
 target_link_libraries( sonomkr-core ${Boost_LIBRARIES} )
+
+install(TARGETS sonomkr-core RUNTIME DESTINATION /usr/local/bin/sonomkr/)
+install(FILES conf/filters.conf DESTINATION /etc/sonomkr/)
+install(FILES conf/sonomkr.conf DESTINATION /etc/sonomkr/)
+
