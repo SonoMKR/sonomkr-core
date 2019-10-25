@@ -16,20 +16,25 @@ int main()
 
     boost::filesystem::create_directory(boost::filesystem::path("/tmp/sonomkr"));
 
-    auto is_root = (geteuid() == 0);
-//    std::cout << is_root << std::endl;
-    // std::filesystem::path home = getenv("HOME");
-
     std::string main_config = "./sonomkr.conf";
     std::string filters_config = "./filters.conf";
 
+    auto is_root = (geteuid() == 0);
+    if (is_root) {
+        main_config = etc_main_config.generic_string();
+        filters_config = etc_filters_config.generic_string();
+    }
+//    std::cout << is_root << std::endl;
+    // std::filesystem::path home = getenv("HOME");
+
     // Read the file. If there is an error, report it and exit.
-    Configuration config(main_config, filters_config);
+    Configuration* config = new Configuration(main_config, filters_config);
     zmqpp::context context;
 
-    MainController* controller = new MainController(&config, &context);
+    MainController* controller = new MainController(config, &context);
     controller->start();
     controller->waitUntilDone();
+
     return EXIT_SUCCESS;
 }
 
