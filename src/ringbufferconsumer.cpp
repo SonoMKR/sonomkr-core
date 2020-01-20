@@ -2,13 +2,13 @@
 
 #include "ringbuffer.h"
 
-RingBufferConsumer::RingBufferConsumer(RingBuffer *buffer, int size_to_read) :
-    do_read_(false),
+RingBufferConsumer::RingBufferConsumer(RingBuffer *buffer, unsigned long size_to_read) :
     buffer_(buffer),
-    size_to_read_(size_to_read),
     reader_index_(buffer->registerReader()),
+    do_read_(false),
     buffer_ptr_(buffer->getBufferPtr()),
-    buffer_size_(buffer->getBufferSize())
+    buffer_size_(buffer->getBufferSize()),
+    size_to_read_(size_to_read)
 {
 }
 

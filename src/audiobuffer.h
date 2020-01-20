@@ -28,10 +28,11 @@ private:
     double last_time_;
 #endif
 
-    float decodeAudio24bit(const char* input_buffer);
-    float decodeAudio16bit(const char* input_buffer);
+    double decodeAudio32bit(const char* input_buffer);
+    double decodeAudio24bit(const char* input_buffer);
+    double decodeAudio16bit(const char* input_buffer);
 
-    void pubAudioBuffer(int channel, const float* buffer, const int &buffer_size);
+    void pubAudioBuffer(int channel, const double *buffer, const int &buffer_size);
 
 public:
     AudioBuffer(Configuration* config, zmqpp::context* zmq);

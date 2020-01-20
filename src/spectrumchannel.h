@@ -38,7 +38,7 @@ private:
     int spectrum_buffer_size_;
     int spectrum_write_position_;
 
-    std::atomic<float> sentivity_correction_;
+    std::atomic<double> sentivity_correction_;
 
     zmqpp::context *zmq_context_;
     zmqpp::socket zmq_pub_socket_;
@@ -60,7 +60,7 @@ public:
 
     inline void setSentivityCorrection(float value)
     {
-        sentivity_correction_.store(value);
+        sentivity_correction_ = value;
     }
 
     inline int getMinFreq() const {

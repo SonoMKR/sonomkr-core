@@ -23,16 +23,16 @@ void SineGenerator::run()
     double lastTime = 0;
     _doSine = true;
 
-    _periodBuf = new float[_periodsize];
+    _periodBuf = new double[_periodsize];
     _audioBuffer->resetBuffer();
 
-    int sleepTime = int((float(_periodsize) / _rate) * 1000 * 1000);
+    int sleepTime = int((double(_periodsize) / _rate) * 1000 * 1000);
 
     while (_doSine) {
 
         for (int i = 0; i < _periodsize; i++) {
             _periodBuf[i] = sin(2.0 * 3.141592653589793 * _freq * lastTime);
-            lastTime += 1.0 / float(_rate);
+            lastTime += 1.0 / double(_rate);
         }
 
         _audioBuffer->writeToBuffer(_periodBuf, _periodsize);

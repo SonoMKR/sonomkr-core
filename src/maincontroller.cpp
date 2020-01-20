@@ -47,7 +47,7 @@ void MainController::initialize()
         channel1_ = new SpectrumChannel(config_,
                                         1,
                                         audio_buffer_->getChannelBuffer(channel_count),
-                                        1024,
+                                        10000,
                                         zmq_context_);
         channel_count++;
     }
@@ -56,7 +56,7 @@ void MainController::initialize()
         channel2_ = new SpectrumChannel(config_,
                                         2,
                                         audio_buffer_->getChannelBuffer(channel_count),
-                                        1024,
+                                        10000,
                                         zmq_context_);
         channel_count++;
     }

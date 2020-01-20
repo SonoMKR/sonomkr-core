@@ -55,7 +55,7 @@ RingBuffer *AudioBuffer::getChannelBuffer(int channel)
 void AudioBuffer::writeAudioToBuffers(const char *input_buffer, const int &buffer_size,
                                       int &nb_channels, int &format_bit)
 {
-    if (format_bit != 24 && format_bit != 16)
+    if (format_bit != 32 && format_bit != 24 && format_bit != 16)
     {
         return; // format not supported
     }
@@ -68,7 +68,7 @@ void AudioBuffer::writeAudioToBuffers(const char *input_buffer, const int &buffe
     int frame_byte_size = nb_channels * sample_byte_size;
     int nb_samples = buffer_size / frame_byte_size;
 
-    float audio_buffers[nb_channels_][nb_samples];
+    double audio_buffers[nb_channels_][nb_samples];
 
     int s = 0;
 
@@ -76,8 +76,12 @@ void AudioBuffer::writeAudioToBuffers(const char *input_buffer, const int &buffe
     {
         for (int c = 0; c < nb_channels_; ++c)
         {
-            float sample = 0.0;
-            if (format_bit == 24)
+            double sample = 0.0;
+            if (format_bit == 32)
+            {
+                sample = decodeAudio32bit(&input_buffer[i + c * sample_byte_size]);
+            }
+            else if (format_bit == 24)
             {
                 sample = decodeAudio24bit(&input_buffer[i + c * sample_byte_size]);
             }
@@ -104,10 +108,21 @@ void AudioBuffer::writeAudioToBuffers(const char *input_buffer, const int &buffe
     }
 }
 
-float AudioBuffer::decodeAudio24bit(const char *input_buffer)
+double AudioBuffer::decodeAudio32bit(const char *input_buffer)
 {
     int32_t data_sample_32bit = 0;
-    float data_sample_sound = 0.0;
+    double data_sample_sound = 0.0;
+
+    data_sample_32bit = ((input_buffer[0]) | (input_buffer[1] << 8) | (input_buffer[2] << 16) | (input_buffer[3] << 24));
+    data_sample_sound = (data_sample_32bit / 2147483647.0); // / 0.05;
+
+    return data_sample_sound;
+}
+
+double AudioBuffer::decodeAudio24bit(const char *input_buffer)
+{
+    int32_t data_sample_32bit = 0;
+    double data_sample_sound = 0.0;
 
     data_sample_32bit = ((input_buffer[0]) | (input_buffer[1] << 8) | (input_buffer[2] << 16));
     if ((data_sample_32bit & (1U << 23)) > 0)
@@ -119,10 +134,10 @@ float AudioBuffer::decodeAudio24bit(const char *input_buffer)
     return data_sample_sound;
 }
 
-float AudioBuffer::decodeAudio16bit(const char *input_buffer)
+double AudioBuffer::decodeAudio16bit(const char *input_buffer)
 {
     int16_t data_sample_16bit = 0;
-    float data_sample_sound = 0.0;
+    double data_sample_sound = 0.0;
 
     data_sample_16bit = ((input_buffer[0]) | (input_buffer[1] << 8));
     data_sample_sound = (data_sample_16bit / 32768.0); // / 0.05;
@@ -130,12 +145,12 @@ float AudioBuffer::decodeAudio16bit(const char *input_buffer)
     return data_sample_sound;
 }
 
-void AudioBuffer::pubAudioBuffer(int channel, const float* buffer, const int &buffer_size)
+void AudioBuffer::pubAudioBuffer(int channel, const double* buffer, const int &buffer_size)
 {
     int32_t buffer32bit[buffer_size]; 
     for (int i = 0; i < buffer_size; i++)
     {
-        buffer32bit[i] = (int32_t)(buffer[i] * 2147483647);
+        buffer32bit[i] = (int32_t)(buffer[i] * 2147483647.0);
     }
     zmqpp::message msg;
     if (channel == 0) {

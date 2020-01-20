@@ -33,13 +33,13 @@ class RingBuffer
     std::vector<BufferReader *> readers_list_;
 
   public:
-    RingBuffer(const int &size);
+    RingBuffer(const unsigned long &size);
     ~RingBuffer();
-    int registerReader();
-    bool waitToBeginRead(const int &reader_index, const unsigned int &size_to_read,
+    unsigned long registerReader();
+    bool waitToBeginRead(const unsigned long &reader_index, const unsigned long &size_to_read,
                          unsigned long &read_position);
-    void endRead(const int &reader_index, const int &size_red);
-    void writeToBuffer(const float *input_buffer, const int &size_to_write);
+    void endRead(const unsigned long &reader_index, const unsigned int &size_red);
+    void writeToBuffer(const double *input_buffer, const unsigned int &size_to_write);
     void resetBuffer();
 
     inline float *getBufferPtr()

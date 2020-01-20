@@ -16,7 +16,7 @@ SpectrumChannel::SpectrumChannel(Configuration* config, int channel,
     {
         channel_config = config_->getChannel1Config();
     }
-    else if (channel == 2)
+    else // if (channel == 2)
     {
         channel_config = config_->getChannel2Config();
     }
@@ -25,7 +25,7 @@ SpectrumChannel::SpectrumChannel(Configuration* config, int channel,
     fmax_ = channel_config->fmax;
     integration_period_ = channel_config->integration_period;
     std::string publish_bind = channel_config->publish_bind;
-    sentivity_correction_ = - 20 * log10f(channel_config->sensitivity * P0 / 1000);
+    sentivity_correction_ = - 20 * log10(channel_config->sensitivity * P0 / 1000);
 
     zmq_pub_socket_.bind(publish_bind.c_str());
 

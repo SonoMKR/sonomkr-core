@@ -13,14 +13,14 @@ class RingBufferConsumer
     std::thread read_thread_;
     bool do_read_;
     float *buffer_ptr_;
-    int buffer_size_;
-    int size_to_read_;
+    unsigned long buffer_size_;
+    unsigned long size_to_read_;
 
     virtual int processData(unsigned long read_position) = 0;
     void run();
 
   public:
-    RingBufferConsumer(RingBuffer *buffer, int size_to_read);
+    RingBufferConsumer(RingBuffer *buffer, unsigned long size_to_read);
     virtual ~RingBufferConsumer();
     void start(bool restart = false);
     void stop();

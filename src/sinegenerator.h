@@ -16,7 +16,7 @@ private:
     int _rate, _periodsize;
     bool _doSine;
     float _freq;
-    float* _periodBuf;
+    double* _periodBuf;
 
 public:
     SineGenerator(float freq, unsigned long size);
