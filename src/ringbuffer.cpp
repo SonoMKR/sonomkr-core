@@ -5,7 +5,7 @@ RingBuffer::RingBuffer(const unsigned long &size) :
     buffer_size_(size),
     write_position_(0)
 {
-    buffer_ = new float[buffer_size_];
+    buffer_ = new double[buffer_size_];
 }
 
 RingBuffer::~RingBuffer()

@@ -24,7 +24,7 @@ class AudioCapture
     int channels_;
     int period_size_;
     int periods_;
-    int bit_depth_;
+    std::string format_;
     bool do_capture_;
 
     snd_pcm_t *open_pcm();

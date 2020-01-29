@@ -6,7 +6,7 @@
 #define AUDIO_SOUNDCARD_PATH "audio.soundCard"
 #define AUDIO_CHANNELS_PATH "audio.availableChannels"
 #define AUDIO_SAMPLERATE_PATH "audio.sampleRate"
-#define AUDIO_BITDEPTH_PATH "audio.bitDepth"
+#define AUDIO_FORMAT_PATH "audio.format"
 #define AUDIO_PERIODS_PATH "audio.periods"
 #define AUDIO_PERIODSIZE_PATH "audio.periodSize"
 #define AUDIO_PUBLISH_PATH "audio.publishBind"
@@ -35,7 +35,7 @@ struct AudioConfig
   std::string sound_card = "hw:0,0";
   int available_channels = 2;
   int sample_rate = 48000;
-  int bit_depth = 24;
+  std::string format = "S24_LE";
   int periods = 4;
   int period_size = 4096;
   std::string publish_bind = "ipc:///tmp/sonomkr/audio";

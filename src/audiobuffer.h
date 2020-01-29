@@ -42,7 +42,7 @@ public:
     void writeAudioToBuffers(const char* input_buffer,
                              const int& size_to_write,
                              int& nb_channels,
-                             int& format_bit);
+                             std::string &format);
     RingBuffer* getChannelBuffer(int channel);
 };
 

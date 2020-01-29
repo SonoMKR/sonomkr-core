@@ -1,0 +1,12 @@
+[Unit]
+Description=SonoMKR Main Service
+After=multi-user.target
+
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/sonomkr/sonomkr-core
+
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

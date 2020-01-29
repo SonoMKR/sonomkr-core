@@ -26,7 +26,7 @@ class RingBuffer
     std::shared_timed_mutex mutex_;
     std::condition_variable_any notify_;
     std::chrono::milliseconds ms_timeout_;
-    float *buffer_;
+    double *buffer_;
     unsigned long buffer_size_;
     unsigned long write_position_;
 
@@ -42,7 +42,7 @@ class RingBuffer
     void writeToBuffer(const double *input_buffer, const unsigned int &size_to_write);
     void resetBuffer();
 
-    inline float *getBufferPtr()
+    inline double *getBufferPtr()
     {
         return buffer_;
     }

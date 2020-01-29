@@ -79,9 +79,9 @@ void Configuration::initConfig(Config& config)
         Setting& setting = audio_setting.add("sampleRate", Setting::Type::TypeInt);
         setting = audio_->sample_rate;
     }
-    if (!config.lookupValue(AUDIO_BITDEPTH_PATH, audio_->bit_depth)) {
-        Setting& setting = audio_setting.add("bitDepth", Setting::Type::TypeInt);
-        setting = audio_->bit_depth;
+    if (!config.lookupValue(AUDIO_FORMAT_PATH, audio_->format)) {
+        Setting& setting = audio_setting.add("format", Setting::Type::TypeString);
+        setting = audio_->format;
     }
     if (!config.lookupValue(AUDIO_PERIODS_PATH, audio_->periods)) {
         Setting& setting = audio_setting.add("periods", Setting::Type::TypeInt);

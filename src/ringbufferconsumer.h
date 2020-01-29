@@ -12,7 +12,7 @@ class RingBufferConsumer
     int reader_index_;
     std::thread read_thread_;
     bool do_read_;
-    float *buffer_ptr_;
+    double *buffer_ptr_;
     unsigned long buffer_size_;
     unsigned long size_to_read_;
 

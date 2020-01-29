@@ -53,18 +53,30 @@ RingBuffer *AudioBuffer::getChannelBuffer(int channel)
 }
 
 void AudioBuffer::writeAudioToBuffers(const char *input_buffer, const int &buffer_size,
-                                      int &nb_channels, int &format_bit)
+                                      int &nb_channels, std::string &format)
 {
-    if (format_bit != 32 && format_bit != 24 && format_bit != 16)
-    {
-        return; // format not supported
-    }
     if (nb_channels_ > nb_channels)
     {
         return; // should not happen
     }
+    int sample_byte_size;
+    if (format == "S32_LE") {
+        sample_byte_size = 32 / 8;
+    }
+    else if (format == "S24_LE") {
+        sample_byte_size = 32 / 8;
+    }
+    else if (format == "S24_3LE") {
+        sample_byte_size = 24 / 8;
+    }
+    else if (format == "S16_LE") {
+        sample_byte_size = 16 / 8;
+    }
+    else {
+        std::cerr << ("Unsupported format") << std::endl;
+        return; // format not supported
+    }
 
-    int sample_byte_size = (format_bit == 24) ? (32 / 8) : (format_bit / 8);
     int frame_byte_size = nb_channels * sample_byte_size;
     int nb_samples = buffer_size / frame_byte_size;
 
@@ -77,15 +89,19 @@ void AudioBuffer::writeAudioToBuffers(const char *input_buffer, const int &buffe
         for (int c = 0; c < nb_channels_; ++c)
         {
             double sample = 0.0;
-            if (format_bit == 32)
+            if (format == "S32_LE")
             {
                 sample = decodeAudio32bit(&input_buffer[i + c * sample_byte_size]);
             }
-            else if (format_bit == 24)
+            else if (format == "S24_LE")
             {
                 sample = decodeAudio24bit(&input_buffer[i + c * sample_byte_size]);
             }
-            if (format_bit == 16)
+            else if (format == "S24_3LE")
+            {
+                sample = decodeAudio24bit(&input_buffer[i + c * sample_byte_size]);
+            }
+            else if (format == "S16_LE")
             {
                 sample = decodeAudio16bit(&input_buffer[i + c * sample_byte_size]);
             }
@@ -114,7 +130,7 @@ double AudioBuffer::decodeAudio32bit(const char *input_buffer)
     double data_sample_sound = 0.0;
 
     data_sample_32bit = ((input_buffer[0]) | (input_buffer[1] << 8) | (input_buffer[2] << 16) | (input_buffer[3] << 24));
-    data_sample_sound = (data_sample_32bit / 2147483647.0); // / 0.05;
+    data_sample_sound = (data_sample_32bit / 2147483647.0);
 
     return data_sample_sound;
 }
@@ -129,7 +145,7 @@ double AudioBuffer::decodeAudio24bit(const char *input_buffer)
     {                                      //24 bit negative value
         data_sample_32bit |= (0xff << 24); //get 32 bit negative value
     }
-    data_sample_sound = (data_sample_32bit / 8388608.0); // / 0.05;
+    data_sample_sound = (data_sample_32bit / 8388608.0);
 
     return data_sample_sound;
 }
@@ -140,7 +156,7 @@ double AudioBuffer::decodeAudio16bit(const char *input_buffer)
     double data_sample_sound = 0.0;
 
     data_sample_16bit = ((input_buffer[0]) | (input_buffer[1] << 8));
-    data_sample_sound = (data_sample_16bit / 32768.0); // / 0.05;
+    data_sample_sound = (data_sample_16bit / 32768.0);
 
     return data_sample_sound;
 }

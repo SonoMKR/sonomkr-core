@@ -7,14 +7,28 @@ AudioCapture::AudioCapture(Configuration *config, AudioBuffer *audio_buffer) :
     audio_buffer_(audio_buffer)
 {
     AudioConfig* audio_config = config_->getAudioConfig();
-    bit_depth_ = audio_config->bit_depth;
+    format_ = audio_config->format;
     pcm_name_ = audio_config->sound_card;
     sample_rate_ = audio_config->sample_rate;
     channels_ = audio_config->available_channels;
     periods_ = audio_config->periods;
     period_size_ = audio_config->period_size;
 
-    sample_size_ = (bit_depth_ == 24) ? (32 / 8) : (bit_depth_ / 8);
+    if (format_ == "S32_LE") {
+        sample_size_ = 32 / 8;
+    }
+    else if (format_ == "S24_LE") {
+        sample_size_ = 32 / 8;
+    }
+    else if (format_ == "S24_3LE") {
+        sample_size_ = 24 / 8;
+    }
+    else if (format_ == "S16_LE") {
+        sample_size_ = 16 / 8;
+    }
+    else {
+        std::cerr << ("Unsupported format") << std::endl;
+    }
     frame_size_ = channels_ * sample_size_;
 }
 
@@ -61,7 +75,7 @@ void AudioCapture::run()
 
         int count = period_size_ * frame_size_; // number of values to write to ring buffer
 
-        audio_buffer_->writeAudioToBuffers(period_buf_, count, channels_, bit_depth_);
+        audio_buffer_->writeAudioToBuffers(period_buf_, count, channels_, format_);
     }
     snd_pcm_close(capture_handle_);
     free(period_buf_);
@@ -122,41 +136,30 @@ snd_pcm_t *AudioCapture::open_pcm()
         snd_pcm_close(pcm_handle);
         return (NULL);
     }
-    if (bit_depth_ == 16)
+    snd_pcm_format_t audio_format;
+    if (format_ == "S16_LE")
     {
-        err = snd_pcm_hw_params_set_format(pcm_handle, hwparams,
-                                           SND_PCM_FORMAT_S16_LE);
-        if (err < 0)
-        {
-            snd_pcm_close(pcm_handle);
-            std::cerr << "Error setting format (" << snd_strerror(err) << ")" << std::endl;
-            //            ("Error setting format (%s).", snd_strerror(err));
-            return (NULL);
-        }
+        audio_format = SND_PCM_FORMAT_S16_LE;
     }
-    else if (bit_depth_ == 24)
+    else if (format_ == "S24_3LE")
     {
-        err = snd_pcm_hw_params_set_format(pcm_handle, hwparams,
-                                           SND_PCM_FORMAT_S24_LE);
-        if (err < 0)
-        {
-            snd_pcm_close(pcm_handle);
-            //            ("Error setting format (%s).", snd_strerror(err));
-            std::cerr << "Error setting format (" << snd_strerror(err) << ")" << std::endl;
-            return (NULL);
-        }
+        audio_format = SND_PCM_FORMAT_S24_3LE;
     }
-    else
+    else if (format_ == "S24_LE")
     {
-        err = snd_pcm_hw_params_set_format(pcm_handle, hwparams,
-                                           SND_PCM_FORMAT_S32_LE);
-        if (err < 0)
-        {
-            snd_pcm_close(pcm_handle);
-            //            ("Error setting format (%s).", snd_strerror(err));
-            std::cerr << "Error setting format (" << snd_strerror(err) << ")" << std::endl;
-            return (NULL);
-        }
+        audio_format = SND_PCM_FORMAT_S24_LE;
+    }
+    else if (format_ == "S32_LE")
+    {
+        audio_format = SND_PCM_FORMAT_S32_LE;
+    }
+    err = snd_pcm_hw_params_set_format(pcm_handle, hwparams, audio_format);
+    if (err < 0)
+    {
+        snd_pcm_close(pcm_handle);
+        //            ("Error setting format (%s).", snd_strerror(err));
+        std::cerr << "Error setting format (" << snd_strerror(err) << ")" << std::endl;
+        return (NULL);
     }
     tmp = (unsigned int)sample_rate_;
     err = snd_pcm_hw_params_set_rate_near(pcm_handle, hwparams, &tmp, 0);
