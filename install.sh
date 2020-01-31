@@ -2,8 +2,6 @@ sudo apt install -y git libzmq3-dev libsodium-dev libconfig-dev libasound2-dev b
 
 sudo mkdir /etc/sonomkr
 
-cd ~
-
 mkdir libs -p
 cd libs
 
@@ -14,9 +12,6 @@ make
 sudo make install
 
 cd ../..
-
-git clone https://github.com/SonoMKR/sonomkr-core.git
-cd sonomkr-core
 
 mkdir build
 cd build 
