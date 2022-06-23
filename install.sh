@@ -8,6 +8,8 @@ cd libs
 git clone https://github.com/zeromq/zmqpp.git
 cd zmqpp
 
+git checkout -b 4.2.0
+
 make
 sudo make install
 

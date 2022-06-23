@@ -27,7 +27,7 @@ private:
 #ifdef SINE_TEST
     double last_time_;
 #endif
-
+    double decodeAudioFloat32bit(const char* input_buffer);
     double decodeAudio32bit(const char* input_buffer);
     double decodeAudio24bit(const char* input_buffer);
     double decodeAudio16bit(const char* input_buffer);

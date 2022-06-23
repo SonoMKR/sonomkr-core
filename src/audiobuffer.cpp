@@ -72,6 +72,9 @@ void AudioBuffer::writeAudioToBuffers(const char *input_buffer, const int &buffe
     else if (format == "S16_LE") {
         sample_byte_size = 16 / 8;
     }
+    else if (format == "FLOAT_LE") {
+        sample_byte_size = 32 / 8;
+    }
     else {
         std::cerr << ("Unsupported format") << std::endl;
         return; // format not supported
@@ -105,6 +108,10 @@ void AudioBuffer::writeAudioToBuffers(const char *input_buffer, const int &buffe
             {
                 sample = decodeAudio16bit(&input_buffer[i + c * sample_byte_size]);
             }
+            else if (format == "FLOAT_LE")
+            {
+                sample = decodeAudioFloat32bit(&input_buffer[i + c * sample_byte_size]);
+            }
 #ifdef SINE_TEST
             sample = float(SINE_GAIN * sin(2.0 * 3.141592653589793 * float(SINE_FREQ) * _lastTime));
 #endif
@@ -122,6 +129,14 @@ void AudioBuffer::writeAudioToBuffers(const char *input_buffer, const int &buffe
         channel_buffers_[c]->writeToBuffer(audio_buffers[c], nb_samples);
         pubAudioBuffer(c, audio_buffers[c], nb_samples);
     }
+}
+double AudioBuffer::decodeAudioFloat32bit(const char *input_buffer)
+{
+    double data_sample_sound = 0.0;
+
+    data_sample_sound = (float) ((input_buffer[0]) | (input_buffer[1] << 8) | (input_buffer[2] << 16) | (input_buffer[3] << 24));
+
+    return data_sample_sound; 
 }
 
 double AudioBuffer::decodeAudio32bit(const char *input_buffer)

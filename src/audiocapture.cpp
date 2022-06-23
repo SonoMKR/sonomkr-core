@@ -26,6 +26,9 @@ AudioCapture::AudioCapture(Configuration *config, AudioBuffer *audio_buffer) :
     else if (format_ == "S16_LE") {
         sample_size_ = 16 / 8;
     }
+    else if (format_ == "FLOAT_LE") {
+        sample_size_ = 32 / 8;
+    }
     else {
         std::cerr << ("Unsupported format") << std::endl;
     }
@@ -152,6 +155,10 @@ snd_pcm_t *AudioCapture::open_pcm()
     else if (format_ == "S32_LE")
     {
         audio_format = SND_PCM_FORMAT_S32_LE;
+    }
+    else if (format_ == "FLOAT_LE")
+    {
+        audio_format = SND_PCM_FORMAT_FLOAT_LE;
     }
     err = snd_pcm_hw_params_set_format(pcm_handle, hwparams, audio_format);
     if (err < 0)
