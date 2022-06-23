@@ -132,11 +132,11 @@ void AudioBuffer::writeAudioToBuffers(const char *input_buffer, const int &buffe
 }
 double AudioBuffer::decodeAudioFloat32bit(const char *input_buffer)
 {
-    double data_sample_sound = 0.0;
-
-    data_sample_sound = (float) ((input_buffer[0]) | (input_buffer[1] << 8) | (input_buffer[2] << 16) | (input_buffer[3] << 24));
-
-    return data_sample_sound; 
+    int32_t data_sample_32bit = 0;
+    
+    data_sample_32bit = ((input_buffer[0]) | (input_buffer[1] << 8) | (input_buffer[2] << 16) | (input_buffer[3] << 24));
+    
+    return reinterpret_cast<float &>(data_sample_32bit); 
 }
 
 double AudioBuffer::decodeAudio32bit(const char *input_buffer)
