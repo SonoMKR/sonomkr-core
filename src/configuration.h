@@ -50,7 +50,7 @@ struct ChannelConfig
   int fmin = 12;
   int fmax = 44;
   float integration_period = 1.0;
-  double sensitivity = 50.0; // mv/Unit
+  double sensitivity = 0.05; // V/Pa
   std::string publish_bind;
   ChannelConfig() {
     publish_bind = "ipc:///tmp/sonomkr/channel" + std::to_string(channel_count);

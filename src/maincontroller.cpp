@@ -275,10 +275,10 @@ void MainController::run()
                 float sens = float(std::stod(value));
                 channel_config->sensitivity = sens;
                 if (channel == "1") {
-                    channel1_->setSentivityCorrection(- 20 * log10f(sens * P0 / 1000));
+                    channel1_->setSentivityCorrection(- 20 * log10f(sens * P0));
                 }
                 else if (channel == "2") {
-                    channel2_->setSentivityCorrection(- 20 * log10f(sens * P0 / 1000));
+                    channel2_->setSentivityCorrection(- 20 * log10f(sens * P0));
                 }
                 config_->saveCurrentConfig();
                 sendResponseBody(200, "OK", std::to_string(channel_config->sensitivity).c_str());
