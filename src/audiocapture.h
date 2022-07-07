@@ -16,7 +16,7 @@ class AudioCapture
     AudioBuffer *audio_buffer_;
     std::thread capture_thread_;
     snd_pcm_t *capture_handle_;
-    char *period_buf_;
+    unsigned char *period_buf_;
     std::string pcm_name_;
     int sample_size_;
     int sample_rate_;

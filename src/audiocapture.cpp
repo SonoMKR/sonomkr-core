@@ -56,7 +56,7 @@ void AudioCapture::run()
         return;
     }
 
-    period_buf_ = new char[period_size_ * frame_size_];
+    period_buf_ = new unsigned char[period_size_ * frame_size_];
     audio_buffer_->resetBuffers();
 
     struct sched_param schp;

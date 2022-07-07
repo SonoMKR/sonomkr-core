@@ -19,7 +19,7 @@ private:
     Configuration* config_;
     zmqpp::context* zmq_context_;
     zmqpp::socket zmq_pub_socket_;
-    
+
     unsigned long buffer_size_;
     int nb_channels_;
     std::vector<RingBuffer*> channel_buffers_;
@@ -27,10 +27,10 @@ private:
 #ifdef SINE_TEST
     double last_time_;
 #endif
-    double decodeAudioFloat32bit(const char* input_buffer);
-    double decodeAudio32bit(const char* input_buffer);
-    double decodeAudio24bit(const char* input_buffer);
-    double decodeAudio16bit(const char* input_buffer);
+    double decodeAudioFloat32bit(const unsigned char* input_buffer);
+    double decodeAudio32bit(const unsigned char* input_buffer);
+    double decodeAudio24bit(const unsigned char* input_buffer);
+    double decodeAudio16bit(const unsigned char* input_buffer);
 
     void pubAudioBuffer(int channel, const double *buffer, const int &buffer_size);
 
@@ -39,7 +39,7 @@ public:
     ~AudioBuffer();
 
     void resetBuffers();
-    void writeAudioToBuffers(const char* input_buffer,
+    void writeAudioToBuffers(const unsigned char* input_buffer,
                              const int& size_to_write,
                              int& nb_channels,
                              std::string &format);
