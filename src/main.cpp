@@ -2,7 +2,7 @@
 #include <iostream>
 #include <boost/filesystem.hpp>
 #include <libconfig.h++>
-#include <zmqpp/zmqpp.hpp>
+#include <zmq.hpp>
 
 #include "configuration.h"
 #include "maincontroller.h"
@@ -29,7 +29,7 @@ int main()
 
     // Read the file. If there is an error, report it and exit.
     Configuration* config = new Configuration(main_config, filters_config);
-    zmqpp::context context;
+    zmq::context_t context;
 
     MainController* controller = new MainController(config, &context);
     controller->start();

@@ -2,12 +2,12 @@
 
 SpectrumChannel::SpectrumChannel(Configuration* config, int channel,
                                  RingBuffer* input_buffer, int size_to_read,
-                                 zmqpp::context* zmq_context):
+                                 zmq::context_t* zmq_context):
     config_(config),
     input_buffer_(input_buffer),
     RingBufferConsumer(input_buffer, size_to_read),
     zmq_context_(zmq_context),
-    zmq_pub_socket_(*zmq_context, zmqpp::socket_type::publish)
+    zmq_pub_socket_(*zmq_context, zmq::socket_type::pub)
 {
     sample_rate_ = config_->getAudioConfig()->sample_rate;
 
@@ -102,10 +102,9 @@ int SpectrumChannel::processData(unsigned long readPosition)
 void SpectrumChannel::emitNewSpectrum(std::string spectrum_str)
 {
     // send topic in first part of the message
-    zmqpp::message msg;
-    msg.add("LEQ");
-    msg.add(spectrum_str);
-    zmq_pub_socket_.send(msg);
+    zmq::message_t msg(spectrum_str.size());
+    zmq_pub_socket_.send(zmq::str_buffer("LEQ"), zmq::send_flags::sndmore);
+    zmq_pub_socket_.send(zmq::buffer(spectrum_str), zmq::send_flags::dontwait);
 }
 
 void SpectrumChannel::start(bool restart)

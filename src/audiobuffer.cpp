@@ -1,9 +1,9 @@
 #include "audiobuffer.h"
 
-AudioBuffer::AudioBuffer(Configuration *config, zmqpp::context* zmq) :
+AudioBuffer::AudioBuffer(Configuration *config, zmq::context_t* zmq):
     config_(config),
     zmq_context_(zmq),
-    zmq_pub_socket_(*zmq, zmqpp::socket_type::pub)
+    zmq_pub_socket_(*zmq, zmq::socket_type::pub)
 {
 #ifdef SINE_TEST
     _lastTime = 0.0;
@@ -183,13 +183,13 @@ void AudioBuffer::pubAudioBuffer(int channel, const double* buffer, const int &b
     {
         bufferFloat[i] = buffer[i];
     }
-    zmqpp::message msg;
+    zmq::message_t msg(buffer_size * sizeof(float_t));
+    memcpy(bufferFloat, msg.data(), buffer_size * sizeof(float_t));
     if (channel == 0) {
-        msg.add("CH1");
+        zmq_pub_socket_.send(zmq::str_buffer("CH1"), zmq::send_flags::sndmore);
     } else {
-        msg.add("CH2");
+        zmq_pub_socket_.send(zmq::str_buffer("CH2"), zmq::send_flags::sndmore);
     }
-    msg.add_raw(bufferFloat, buffer_size * sizeof(float_t));
-    zmq_pub_socket_.send(msg);
+    zmq_pub_socket_.send(msg, zmq::send_flags::dontwait);
 }
 

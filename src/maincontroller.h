@@ -2,7 +2,8 @@
 #define MAINCONTROLLER_H
 
 #include <thread>
-#include <zmqpp/zmqpp.hpp>
+#include <zmq.hpp>
+#include <zmq_addon.hpp>
 
 #include "configuration.h"
 #include "spectrumchannel.h"
@@ -24,8 +25,8 @@ class MainController
     SpectrumChannel *channel1_ = nullptr;
     SpectrumChannel *channel2_ = nullptr;
 
-    zmqpp::context *zmq_context_;
-    zmqpp::socket zmq_req_socket_;
+    zmq::context_t *zmq_context_;
+    zmq::socket_t zmq_req_socket_;
 
     void initialize();
     void cleanup();
@@ -34,7 +35,7 @@ class MainController
     void sendResponseBody(int status, const char *message, const char *body);
 
   public:
-    MainController(Configuration *config, zmqpp::context *zmq);
+    MainController(Configuration *config, zmq::context_t *zmq);
     ~MainController();
     void startChannels(bool restart = false);
     void startChannel(int channel, bool restart = false);

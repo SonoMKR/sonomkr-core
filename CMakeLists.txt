@@ -12,7 +12,7 @@ find_package(Boost REQUIRED filesystem)
 include_directories(${Boost_INCLUDE_DIR})
 link_directories(${Boost_LIBRARY_DIR})
 
-pkg_check_modules(PKG REQUIRED alsa libzmq libconfig++ libzmqpp)
+pkg_check_modules(PKG REQUIRED alsa libzmq libconfig++)
 
 # message(${PKG_LDFLAGS} "-pthread")
 # message(${PKG_CFLAGS})
@@ -33,7 +33,7 @@ endif()
 add_compile_options(${PKG_CFLAGS})
 link_libraries(${PKG_LDFLAGS} "-pthread")
 
-add_executable(sonomkr-core ${SRC})
+add_executable( sonomkr-core ${SRC} )
 target_link_libraries( sonomkr-core ${Boost_LIBRARIES} )
 
 install(TARGETS sonomkr-core RUNTIME DESTINATION /usr/local/bin/sonomkr/)

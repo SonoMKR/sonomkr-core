@@ -9,11 +9,11 @@
 #include "spectrumchannel.h"
 #include "configuration.h"
 
-MainController::MainController(Configuration *config, zmqpp::context *zmq) :
+MainController::MainController(Configuration *config, zmq::context_t *zmq) :
     do_run_(false),
     config_(config),
     zmq_context_(zmq),
-    zmq_req_socket_(*zmq, zmqpp::socket_type::reply)
+    zmq_req_socket_(*zmq, zmq::socket_type::rep)
 {
     std::string endpoint = config_->controller_bind_;
     zmq_req_socket_.bind(endpoint.c_str());
@@ -132,9 +132,9 @@ void MainController::run()
 {
     while (do_run_)
     {
-        zmqpp::message msg;
+        std::vector<zmq::message_t> msgs;
         try {
-            zmq_req_socket_.receive(msg);
+            auto res = zmq::recv_multipart(zmq_req_socket_, std::back_inserter(msgs));
         }
         catch (const std::exception& e) {
             std::cerr << "Zmq socket receive error : " << e.what() << std::endl;
@@ -143,19 +143,19 @@ void MainController::run()
         {
             break;
         }
-        int num_parts = msg.parts();
+        int num_parts = msgs.size();
         if (num_parts < 1) {
             sendResponse(400, "Not enough message parts");
             continue;
         }
-        std::string first_part = msg.get(0);
+        std::string first_part = msgs[0].to_string();
         if (first_part == "START" || first_part == "STOP")
         {
             if (num_parts < 2) {
                 sendResponse(400, "Not enough message parts");
                 continue;
             }
-            std::string channel = msg.get(1);
+            std::string channel = msgs[1].to_string();
             if (channel == "ALL") {
                 if (first_part == "START") {
                     startChannels(true);
@@ -186,7 +186,7 @@ void MainController::run()
                 sendResponse(400, "Not enough message parts");
                 continue;
             }
-            boost::filesystem::path path(msg.get(1));
+            boost::filesystem::path path(msgs[1].to_string());
             if (!boost::filesystem::is_regular_file(path) || !path.is_absolute()) {
                 sendResponse(400, "File not found or is not an absolute path");
                 continue;
@@ -209,8 +209,8 @@ void MainController::run()
                 sendResponse(400, "Not enough message parts");
                 continue;
             }
-            std::string channel = msg.get(1);
-            std::string setting = msg.get(2);
+            std::string channel = msgs[1].to_string();;
+            std::string setting = msgs[2].to_string();;
             ChannelConfig* channel_config;
             if (channel == "1")
             {
@@ -256,9 +256,9 @@ void MainController::run()
                 sendResponse(400, "Not enough message parts");
                 continue;
             }
-            std::string channel = msg.get(1);
-            std::string setting = msg.get(2);
-            std::string value = msg.get(3);
+            std::string channel = msgs[1].to_string();;
+            std::string setting = msgs[2].to_string();;
+            std::string value = msgs[3].to_string();;
             ChannelConfig* channel_config;
             if (channel == "1")
             {
@@ -298,11 +298,11 @@ void MainController::run()
 
 void MainController::sendResponse(int status, const char *message)
 {
-    zmqpp::message msg;
-    msg.add(std::to_string(status));
-    msg.add(message);
+    std::vector<zmq::message_t> msgs;
+    msgs.push_back(zmq::message_t(std::to_string(status)));
+    msgs.push_back(zmq::message_t(message));
     try {
-        zmq_req_socket_.send(msg);
+        auto res = send_multipart(zmq_req_socket_, msgs);
     }
     catch (const std::exception& e) {
         std::cerr << "Zmq socket send error : " << e.what() << std::endl;
@@ -311,12 +311,12 @@ void MainController::sendResponse(int status, const char *message)
 
 void MainController::sendResponseBody(int status, const char *message, const char *body)
 {
-    zmqpp::message msg;
-    msg.add(std::to_string(status));
-    msg.add(message);
-    msg.add(body);
+    std::vector<zmq::message_t> msgs;
+    msgs.push_back(zmq::message_t(std::to_string(status)));
+    msgs.push_back(zmq::message_t(message));
+    msgs.push_back(zmq::message_t(body));
     try {
-        zmq_req_socket_.send(msg);
+        auto res = send_multipart(zmq_req_socket_, msgs);
     }
     catch (const std::exception& e) {
         std::cerr << "Zmq socket send error : " << e.what() << std::endl;

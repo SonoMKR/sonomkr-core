@@ -5,7 +5,7 @@
 #include <atomic>
 #include <string>
 #include <chrono>
-#include <zmqpp/zmqpp.hpp>
+#include <zmq.hpp>
 
 #include "configuration.h"
 #include "audiobuffer.h"
@@ -40,8 +40,8 @@ private:
 
     std::atomic<double> sentivity_correction_;
 
-    zmqpp::context *zmq_context_;
-    zmqpp::socket zmq_pub_socket_;
+    zmq::context_t *zmq_context_;
+    zmq::socket_t zmq_pub_socket_;
 
     void applyG10Strategy();
     void applyG2Strategy();
@@ -52,7 +52,7 @@ private:
 public:
     SpectrumChannel(Configuration* config, int channel,
                     RingBuffer* input_buffer, int sizeToRead,
-                    zmqpp::context* zmq_context);
+                    zmq::context_t* zmq_context);
     ~SpectrumChannel();
     void run();
     void start(bool restart = false);

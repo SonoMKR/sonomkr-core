@@ -2,21 +2,8 @@ sudo apt install -y git libzmq3-dev libsodium-dev libconfig-dev libasound2-dev b
 
 sudo mkdir /etc/sonomkr
 
-mkdir libs -p
-cd libs
-
-git clone https://github.com/zeromq/zmqpp.git
-cd zmqpp
-
-git checkout -b 4.2.0
-
-make
-sudo make install
-
-cd ../..
-
 mkdir build
-cd build 
+cd build
 
 cmake -DCMAKE_BUILD_TYPE=Release -DRASPI=true ..
 make

@@ -9,7 +9,7 @@
 #include <vector>
 #include <math.h>
 
-#include <zmqpp/zmqpp.hpp>
+#include <zmq.hpp>
 
 #include "ringbuffer.h"
 #include "configuration.h"
@@ -17,8 +17,8 @@
 class AudioBuffer {
 private:
     Configuration* config_;
-    zmqpp::context* zmq_context_;
-    zmqpp::socket zmq_pub_socket_;
+    zmq::context_t* zmq_context_;
+    zmq::socket_t zmq_pub_socket_;
 
     unsigned long buffer_size_;
     int nb_channels_;
@@ -35,7 +35,7 @@ private:
     void pubAudioBuffer(int channel, const double *buffer, const int &buffer_size);
 
 public:
-    AudioBuffer(Configuration* config, zmqpp::context* zmq);
+    AudioBuffer(Configuration* config, zmq::context_t* zmq);
     ~AudioBuffer();
 
     void resetBuffers();
