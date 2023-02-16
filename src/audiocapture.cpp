@@ -4,7 +4,8 @@
 
 AudioCapture::AudioCapture(Configuration *config, AudioBuffer *audio_buffer) :
     config_(config),
-    audio_buffer_(audio_buffer)
+    audio_buffer_(audio_buffer),
+    do_capture_(false)
 {
     AudioConfig* audio_config = config_->getAudioConfig();
     format_ = audio_config->format;

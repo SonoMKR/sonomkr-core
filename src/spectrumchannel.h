@@ -38,7 +38,7 @@ private:
     int spectrum_buffer_size_;
     int spectrum_write_position_;
 
-    std::atomic<double> sentivity_correction_;
+    double sentivity_correction_;
 
     zmq::context_t *zmq_context_;
     zmq::socket_t zmq_pub_socket_;
