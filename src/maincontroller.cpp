@@ -296,7 +296,7 @@ void MainController::run()
     }
 }
 
-void MainController::sendResponse(int status, const char *message)
+void MainController::sendResponse(int status, std::string message)
 {
     std::vector<zmq::message_t> msgs;
     msgs.push_back(zmq::message_t(std::to_string(status)));
@@ -309,7 +309,7 @@ void MainController::sendResponse(int status, const char *message)
     }
 }
 
-void MainController::sendResponseBody(int status, const char *message, const char *body)
+void MainController::sendResponseBody(int status, std::string message, std::string body)
 {
     std::vector<zmq::message_t> msgs;
     msgs.push_back(zmq::message_t(std::to_string(status)));

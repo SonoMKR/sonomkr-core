@@ -31,8 +31,8 @@ class MainController
     void initialize();
     void cleanup();
 
-    void sendResponse(int status, const char *message);
-    void sendResponseBody(int status, const char *message, const char *body);
+    void sendResponse(int status, std::string message);
+    void sendResponseBody(int status, std::string message, std::string body);
 
   public:
     MainController(Configuration *config, zmq::context_t *zmq);
