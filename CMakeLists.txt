@@ -20,10 +20,16 @@ pkg_check_modules(PKG REQUIRED alsa libzmq libconfig++)
 file(GLOB SRC src/*.cpp)
 
 message(" Checking RASPI variable")
-if(DEFINED RASPI)
+if(RASPI)
     # Best flags found so far on rpi 3. some may be useless...
     SET(RASPI_FALGS "-mfpu=neon-fp-armv8 -mfloat-abi=hard  -funsafe-math-optimizations -mvectorize-with-neon-quad -ftree-vectorize -mhard-float -latomic")
     message("  RASPI detected ! Using RASPI flags :")
+    message("  ${RASPI_FALGS}")
+    SET(CMAKE_CXX_FLAGS  "${RASPI_FALGS} ${CMAKE_CXX_FLAGS}")
+elseif(RASPI64)
+    # Best flags found so far on rpi 64. some may be useless...
+    SET(RASPI_FALGS "-latomic")
+    message("  RASPI64 detected ! Using RASPI64 flags :")
     message("  ${RASPI_FALGS}")
     SET(CMAKE_CXX_FLAGS  "${RASPI_FALGS} ${CMAKE_CXX_FLAGS}")
 else()
