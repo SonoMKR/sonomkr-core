@@ -8,6 +8,7 @@
 #include "sinegenerator.h"
 #include "spectrumchannel.h"
 #include "configuration.h"
+#include "wavfilesource.h"
 
 MainController::MainController(Configuration *config, zmq::context_t *zmq) :
     do_run_(false),
@@ -34,9 +35,26 @@ MainController::~MainController()
 
 void MainController::initialize()
 {
+    const bool use_wav = !config_->getAudioConfig()->wav_file.empty();
+    if (use_wav)
+    {
+        // the sample rate of the file drives the buffers and the filters
+        std::string error;
+        if (!WavFileSource::applyFileFormat(config_, &error))
+        {
+            std::cerr << "WAV source: " << error << std::endl;
+        }
+    }
+
     audio_buffer_ = new AudioBuffer(config_, zmq_context_);
-    audio_capture_ = new AudioCapture(config_, audio_buffer_);
-    audio_capture_->start();
+    if (use_wav)
+    {
+        audio_source_ = new WavFileSource(config_, audio_buffer_);
+    }
+    else
+    {
+        audio_source_ = new AudioCapture(config_, audio_buffer_);
+    }
 
     is_ch1_active_ = config_->getChannel1Config()->active;
     is_ch2_active_ = config_->getChannel2Config()->active;
@@ -60,6 +78,25 @@ void MainController::initialize()
                                         zmq_context_);
         channel_count++;
     }
+
+    // started once the channels are registered as readers of the buffers,
+    // so that no sample is pushed before they can see it.
+    // A WAV file is only read once a channel runs (autostart or START command):
+    // otherwise the file could be over before anyone processes or listens to it.
+    source_start_deferred_ = use_wav;
+    if (!source_start_deferred_)
+    {
+        audio_source_->start();
+    }
+}
+
+void MainController::startDeferredSource()
+{
+    if (source_start_deferred_)
+    {
+        source_start_deferred_ = false;
+        audio_source_->start();
+    }
 }
 
 void MainController::cleanup()
@@ -74,8 +111,8 @@ void MainController::cleanup()
         delete channel2_;
         channel2_ = nullptr;
     }
-    delete audio_capture_;
-    audio_capture_ = nullptr;
+    delete audio_source_;
+    audio_source_ = nullptr;
     delete audio_buffer_;
     audio_buffer_ = nullptr;
 }
@@ -90,6 +127,7 @@ void MainController::startChannels(bool restart)
     {
         channel2_->start(restart);
     }
+    startDeferredSource();
 }
 
 void MainController::startChannel(int channel, bool restart)
@@ -102,6 +140,7 @@ void MainController::startChannel(int channel, bool restart)
     {
         channel2_->start(restart);
     }
+    startDeferredSource();
 }
 
 void MainController::stopChannels()
@@ -337,7 +376,7 @@ void MainController::start()
 void MainController::stop()
 {
     stopChannels();
-    audio_capture_->stop();
+    audio_source_->stop();
     if (run_thread_.joinable()) {
         run_thread_.join();
     }

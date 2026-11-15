@@ -39,6 +39,12 @@ struct AudioConfig
   int periods = 4;
   int period_size = 4096;
   std::string publish_bind = "ipc:///tmp/sonomkr/audio";
+
+  // WAV file input (command line only, never saved in the config file).
+  // When wav_file is set, it replaces the ALSA capture.
+  std::string wav_file;
+  double wav_speed = 1.0; // 1 = real time, <= 0 = as fast as possible
+  bool wav_loop = false;
 };
 
 struct ChannelConfig

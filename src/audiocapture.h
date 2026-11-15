@@ -8,8 +8,9 @@
 
 #include "configuration.h"
 #include "audiobuffer.h"
+#include "audiosource.h"
 
-class AudioCapture
+class AudioCapture : public AudioSource
 {
   private:
     Configuration *config_;
@@ -33,10 +34,10 @@ class AudioCapture
   public:
     AudioCapture(Configuration *config, AudioBuffer *audioBuffer);
     ~AudioCapture();
-    void start(bool restart = false);
-    void stop();
+    void start(bool restart = false) override;
+    void stop() override;
 
-    inline bool isRunning() const {
+    inline bool isRunning() const override {
       return do_capture_;
     }
 };

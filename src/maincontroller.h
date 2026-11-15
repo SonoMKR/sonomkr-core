@@ -8,7 +8,7 @@
 #include "configuration.h"
 #include "spectrumchannel.h"
 #include "audiobuffer.h"
-#include "audiocapture.h"
+#include "audiosource.h"
 
 class MainController
 {
@@ -18,7 +18,10 @@ class MainController
 
     Configuration *config_;
     AudioBuffer *audio_buffer_;
-    AudioCapture *audio_capture_;
+    AudioSource *audio_source_;
+    bool source_start_deferred_ = false; // WAV: started with the first channel
+
+    void startDeferredSource();
 
     bool is_ch1_active_;
     bool is_ch2_active_;

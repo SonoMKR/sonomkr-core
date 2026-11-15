@@ -17,6 +17,8 @@ class RingBufferConsumer
     unsigned long size_to_read_;
 
     virtual int processData(unsigned long read_position) = 0;
+    // called when no block was available before the wait timeout (~10 ms)
+    virtual void onIdle() {}
     void run();
 
   public:

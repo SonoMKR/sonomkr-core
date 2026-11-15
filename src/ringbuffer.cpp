@@ -62,6 +62,20 @@ void RingBuffer::writeToBuffer(const double *inputBuffer, const unsigned int &si
     notify_.notify_all();
 }
 
+unsigned long RingBuffer::maxPendingRead() const
+{
+    unsigned long pending = 0;
+    for (unsigned int i = 0; i < readers_list_.size(); ++i)
+    {
+        unsigned long readable = readers_list_[i]->size_readable.load();
+        if (readable > pending)
+        {
+            pending = readable;
+        }
+    }
+    return pending;
+}
+
 void RingBuffer::resetBuffer()
 {
     write_position_ = 0;

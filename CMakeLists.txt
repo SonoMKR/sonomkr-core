@@ -39,8 +39,20 @@ endif()
 add_compile_options(${PKG_CFLAGS})
 link_libraries(${PKG_LDFLAGS} "-pthread")
 
-add_executable( sonomkr-core ${SRC} )
-target_link_libraries( sonomkr-core ${Boost_LIBRARIES} )
+# everything but main.cpp goes in a library shared by the executable and the tests
+list(REMOVE_ITEM SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp)
+add_library( sonomkr STATIC ${SRC} )
+target_include_directories( sonomkr PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src )
+target_link_libraries( sonomkr ${Boost_LIBRARIES} )
+
+add_executable( sonomkr-core src/main.cpp )
+target_link_libraries( sonomkr-core sonomkr )
+
+option(SONOMKR_BUILD_TESTS "Build the test suite (ctest)" ON)
+if(SONOMKR_BUILD_TESTS)
+    enable_testing()
+    add_subdirectory(tests)
+endif()
 
 install(TARGETS sonomkr-core RUNTIME DESTINATION /usr/local/bin/sonomkr/)
 install(FILES conf/filters.conf DESTINATION /etc/sonomkr/)

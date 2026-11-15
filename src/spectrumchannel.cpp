@@ -65,38 +65,56 @@ SpectrumChannel::~SpectrumChannel()
 int SpectrumChannel::processData(unsigned long readPosition)
 {
     // readPosition is ignored, we only use it to sync on the audio thread
-    for (int i = 0; i < leqs_.size(); i++)
-    {
-        int leqReadPosition;
-        bool readyRead = leqs_[i].filter->beginReadLeq(1, leqReadPosition);
-        if (!readyRead)
-        {
-            continue;
-        }
-        if (leqReadPosition != spectrum_write_position_)
-        {
-            // leqRead and sepctrumWrite should be in sync
-            // so continue and wait for the current spectrum to be filled
-            // will get the next leq value next time
-            leqs_[i].filter->endReadLeq(0);
-            continue;
-        }
-        float *buffer = leqs_[i].filter->getLeqBuffer();
-        spectrum_buffer_[spectrum_write_position_].setLeq(leqs_[i].freq, buffer[leqReadPosition], sentivity_correction_);
-        leqs_[i].filter->endReadLeq(1);
+    collectLeqs();
+    return size_to_read_;
+}
 
-        if (spectrum_buffer_[spectrum_write_position_].isFull())
+void SpectrumChannel::onIdle()
+{
+    // no new input (end of a WAV file, stopped capture...): the filters may
+    // still be delivering the Leq values of the last blocks
+    collectLeqs();
+}
+
+void SpectrumChannel::collectLeqs()
+{
+    // Take every Leq value already computed, not only one per filter, so that
+    // the spectra never fall behind the filters (short integration periods,
+    // input faster than real time).
+    bool progress = true;
+    while (progress)
+    {
+        progress = false;
+        for (int i = 0; i < leqs_.size(); i++)
         {
-            spectrum_buffer_[spectrum_write_position_].calculateGlobals();
-            emitNewSpectrum(spectrum_buffer_[spectrum_write_position_].toString());
-            spectrum_write_position_ = (spectrum_write_position_ + 1) % spectrum_buffer_size_;
-            std::chrono::milliseconds increment(int(integration_period_ * 1000));
-            last_time_ += increment;
-            spectrum_buffer_[spectrum_write_position_].reset(fmin_, fmax_, last_time_);
+            int leqReadPosition;
+            bool readyRead = leqs_[i].filter->beginReadLeq(1, leqReadPosition);
+            if (!readyRead)
+            {
+                continue;
+            }
+            if (leqReadPosition != spectrum_write_position_)
+            {
+                // leqRead and spectrumWrite should be in sync:
+                // this value belongs to a next spectrum, keep it for later
+                continue;
+            }
+            float *buffer = leqs_[i].filter->getLeqBuffer();
+            spectrum_buffer_[spectrum_write_position_].setLeq(leqs_[i].freq, buffer[leqReadPosition], sentivity_correction_);
+            leqs_[i].filter->endReadLeq(1);
+            progress = true;
+
+            if (spectrum_buffer_[spectrum_write_position_].isFull())
+            {
+                spectrum_buffer_[spectrum_write_position_].calculateGlobals();
+                emitNewSpectrum(spectrum_buffer_[spectrum_write_position_].toString());
+                spectrum_write_position_ = (spectrum_write_position_ + 1) % spectrum_buffer_size_;
+                std::chrono::milliseconds increment(int(integration_period_ * 1000));
+                last_time_ += increment;
+                spectrum_buffer_[spectrum_write_position_].reset(fmin_, fmax_, last_time_);
+            }
         }
     }
-
-    return size_to_read_;
 }
 
 void SpectrumChannel::emitNewSpectrum(std::string spectrum_str)

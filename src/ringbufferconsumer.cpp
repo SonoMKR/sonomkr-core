@@ -41,6 +41,10 @@ void RingBufferConsumer::run()
             }
             buffer_->endRead(reader_index_, size_red);
         }
+        else if (do_read_)
+        {
+            onIdle();
+        }
     }
     //    cout << "end thread : " << this << endl;
 }

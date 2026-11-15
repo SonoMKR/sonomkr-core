@@ -23,6 +23,7 @@ private:
     unsigned long buffer_size_;
     int nb_channels_;
     std::vector<RingBuffer*> channel_buffers_;
+    std::vector<int> input_channels_; // input (0-based) read by each channel buffer
 
 #ifdef SINE_TEST
     double last_time_;
@@ -44,6 +45,10 @@ public:
                              int& nb_channels,
                              std::string &format);
     RingBuffer* getChannelBuffer(int channel);
+
+    inline unsigned long getBufferSize() const { return buffer_size_; }
+    // largest backlog among all the readers of all the channel buffers
+    unsigned long maxPendingRead() const;
 };
 
 #endif // AUDIOBUFFER_H
