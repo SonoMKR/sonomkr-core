@@ -52,6 +52,9 @@ SCENARIOS = {
     "short_integration": dict(rate=48000, fmt="s16", integration=0.125, skip=8, channels=[[(31, 94.0)]]),
     # longer than the 15 s the WAV source may get ahead of the filters
     "long_file_60s": dict(rate=48000, fmt="s16", duration=60.0, channels=[[(31, 94.0)], [(21, 80.0)]]),
+    # 20 kHz band at 44.1 kHz: its upper edge (22.4 kHz) is above Nyquist (22.05 kHz)
+    "band_20k_44k1": dict(rate=44100, fmt="s24", duration=20.0,
+                          channels=[[(44, 80.0), (31, 70.0)], [(31, 80.0)]]),
     # paced playback (4x real time) instead of "as fast as possible"
     "paced_x4": dict(rate=48000, fmt="s16", speed=4.0, channels=[[(28, 70.0), (34, 75.0)]]),
     # only channel 2 active: it must process the second input of the file

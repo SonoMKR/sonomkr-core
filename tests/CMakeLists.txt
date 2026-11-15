@@ -15,6 +15,7 @@ if(Python3_Interpreter_FOUND)
         multitone_48k
         low_bands_48k
         multitone_44k1
+        band_20k_44k1
         paced_x4
         short_integration
         long_file_60s
