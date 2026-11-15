@@ -41,6 +41,8 @@ class RingBuffer
     void endRead(const unsigned long &reader_index, const unsigned int &size_red);
     void writeToBuffer(const double *input_buffer, const unsigned int &size_to_write);
     void resetBuffer();
+    // largest amount of samples written but not yet consumed by a reader
+    unsigned long maxPendingRead() const;
 
     inline double *getBufferPtr()
     {

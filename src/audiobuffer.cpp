@@ -14,15 +14,18 @@ AudioBuffer::AudioBuffer(Configuration *config, zmq::context_t* zmq):
     int sample_rate = config_->getAudioConfig()->sample_rate;
     buffer_size_ = sample_rate * 30;
 
+    // channel N always reads input N of the sound card, even when the other channel is inactive
     nb_channels_ = 0;
     if (config_->getChannel1Config()->active)
     {
         channel_buffers_.push_back(new RingBuffer(buffer_size_));
+        input_channels_.push_back(0);
         nb_channels_++;
     }
     if (config_->getChannel2Config()->active)
     {
         channel_buffers_.push_back(new RingBuffer(buffer_size_));
+        input_channels_.push_back(1);
         nb_channels_++;
     }
 }
@@ -43,6 +46,20 @@ void AudioBuffer::resetBuffers()
     }
 }
 
+unsigned long AudioBuffer::maxPendingRead() const
+{
+    unsigned long pending = 0;
+    for (unsigned int c = 0; c < channel_buffers_.size(); ++c)
+    {
+        unsigned long readable = channel_buffers_[c]->maxPendingRead();
+        if (readable > pending)
+        {
+            pending = readable;
+        }
+    }
+    return pending;
+}
+
 RingBuffer *AudioBuffer::getChannelBuffer(int channel)
 {
     if (channel > channel_buffers_.size())
@@ -55,9 +72,9 @@ RingBuffer *AudioBuffer::getChannelBuffer(int channel)
 void AudioBuffer::writeAudioToBuffers(const unsigned char *input_buffer, const int &buffer_size,
                                       int &nb_channels, std::string &format)
 {
-    if (nb_channels_ > nb_channels)
+    if (nb_channels_ == 0 || input_channels_.back() >= nb_channels)
     {
-        return; // should not happen
+        return; // the input does not provide the channel(s) to read
     }
     int sample_byte_size;
     if (format == "S32_LE") {
@@ -91,26 +108,27 @@ void AudioBuffer::writeAudioToBuffers(const unsigned char *input_buffer, const i
     {
         for (int c = 0; c < nb_channels_; ++c)
         {
+            const unsigned char *raw = &input_buffer[i + input_channels_[c] * sample_byte_size];
             double sample = 0.0;
             if (format == "S32_LE")
             {
-                sample = decodeAudio32bit(&input_buffer[i + c * sample_byte_size]);
+                sample = decodeAudio32bit(raw);
             }
             else if (format == "S24_LE")
             {
-                sample = decodeAudio24bit(&input_buffer[i + c * sample_byte_size]);
+                sample = decodeAudio24bit(raw);
             }
             else if (format == "S24_3LE")
             {
-                sample = decodeAudio24bit(&input_buffer[i + c * sample_byte_size]);
+                sample = decodeAudio24bit(raw);
             }
             else if (format == "S16_LE")
             {
-                sample = decodeAudio16bit(&input_buffer[i + c * sample_byte_size]);
+                sample = decodeAudio16bit(raw);
             }
             else if (format == "FLOAT_LE")
             {
-                sample = decodeAudioFloat32bit(&input_buffer[i + c * sample_byte_size]);
+                sample = decodeAudioFloat32bit(raw);
             }
 #ifdef SINE_TEST
             sample = float(SINE_GAIN * sin(2.0 * 3.141592653589793 * float(SINE_FREQ) * _lastTime));
@@ -127,7 +145,7 @@ void AudioBuffer::writeAudioToBuffers(const unsigned char *input_buffer, const i
     for (int c = 0; c < nb_channels_; ++c)
     {
         channel_buffers_[c]->writeToBuffer(audio_buffers[c], nb_samples);
-        pubAudioBuffer(c, audio_buffers[c], nb_samples);
+        pubAudioBuffer(input_channels_[c], audio_buffers[c], nb_samples);
     }
 }
 double AudioBuffer::decodeAudioFloat32bit(const unsigned char *input_buffer)

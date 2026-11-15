@@ -46,6 +46,8 @@ private:
     void applyG10Strategy();
     void applyG2Strategy();
     int processData(unsigned long readPosition);
+    void onIdle() override;
+    void collectLeqs();
 
     void emitNewSpectrum(std::string spectrumStr);
 
