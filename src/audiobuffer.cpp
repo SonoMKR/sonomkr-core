@@ -184,7 +184,7 @@ void AudioBuffer::pubAudioBuffer(int channel, const double* buffer, const int &b
         bufferFloat[i] = buffer[i];
     }
     zmq::message_t msg(buffer_size * sizeof(float_t));
-    memcpy(bufferFloat, msg.data(), buffer_size * sizeof(float_t));
+    memcpy(msg.data(), bufferFloat, buffer_size * sizeof(float_t));
     if (channel == 0) {
         zmq_pub_socket_.send(zmq::str_buffer("CH1"), zmq::send_flags::sndmore);
     } else {
