@@ -8,7 +8,6 @@
 
 #include "audiobuffer.h"
 #include "audiocapture.h"
-#include "sinegenerator.h"
 #include "spectrumchannel.h"
 #include "configuration.h"
 #include "wavfilesource.h"

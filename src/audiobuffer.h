@@ -1,11 +1,6 @@
 #ifndef AUDIOBUFFER_H
 #define AUDIOBUFFER_H
 
-// #define SINE_TEST
-// #define SINE_FREQ 1000.0
-// #define SINE_GAIN 1.0
-// #define SINE_RATE 44100.0
-
 #include <vector>
 #include <math.h>
 
@@ -25,9 +20,6 @@ private:
     std::vector<RingBuffer*> channel_buffers_;
     std::vector<int> input_channels_; // input (0-based) read by each channel buffer
 
-#ifdef SINE_TEST
-    double last_time_;
-#endif
     double decodeAudioFloat32bit(const unsigned char* input_buffer);
     double decodeAudio32bit(const unsigned char* input_buffer);
     double decodeAudio24bit(const unsigned char* input_buffer);

@@ -5,10 +5,6 @@ AudioBuffer::AudioBuffer(Configuration *config, zmq::context_t* zmq):
     zmq_context_(zmq),
     zmq_pub_socket_(*zmq, zmq::socket_type::pub)
 {
-#ifdef SINE_TEST
-    _lastTime = 0.0;
-#endif
-
     zmq_pub_socket_.bind(config_->getAudioConfig()->publish_bind.c_str());
 
     int sample_rate = config_->getAudioConfig()->sample_rate;
@@ -130,15 +126,8 @@ void AudioBuffer::writeAudioToBuffers(const unsigned char *input_buffer, const i
             {
                 sample = decodeAudioFloat32bit(raw);
             }
-#ifdef SINE_TEST
-            sample = float(SINE_GAIN * sin(2.0 * 3.141592653589793 * float(SINE_FREQ) * _lastTime));
-#endif
             audio_buffers[c][s] = sample;
         }
-
-#ifdef SINE_TEST
-        _lastTime += 1.0 / float(SINE_RATE);
-#endif
         ++s;
     }
 
