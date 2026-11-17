@@ -55,6 +55,13 @@ SCENARIOS = {
     # 20 kHz band at 44.1 kHz: its upper edge (22.4 kHz) is above Nyquist (22.05 kHz)
     "band_20k_44k1": dict(rate=44100, fmt="s24", duration=20.0,
                           channels=[[(44, 80.0), (31, 70.0)], [(31, 80.0)]]),
+    # level step (-40 dB at 40 s) seen by bands of the three processing rates: every band must see it
+    # in the spectrum containing the step, plus the response time of its filter (step_lag, in spectra,
+    # computed from the Butterworth filters: the 16 Hz band is only 3.7 Hz wide).
+    # 0.11 s is 48.51 samples at 441 Hz: a truncated integration period drifts by ~4 spectra at 40 s
+    "step_sync_44k1": dict(rate=44100, fmt="s16", duration=60.0, integration=0.11, step=(40.0, 40.0), skip=20,
+                           step_lag={13: 9, 21: 2, 31: 1, 40: 1},
+                           channels=[[(13, 85.0), (21, 85.0), (31, 85.0), (40, 85.0)]]),
     # paced playback (4x real time) instead of "as fast as possible"
     "paced_x4": dict(rate=48000, fmt="s16", speed=4.0, channels=[[(28, 70.0), (34, 75.0)]]),
     # only channel 2 active: it must process the second input of the file
@@ -64,7 +71,7 @@ SCENARIOS = {
 }
 
 DEFAULTS = dict(fmin=12, fmax=44, duration=8.0, integration=0.5, sensitivity=0.05, skip=2, tol=0.5, floor=30.0,
-                speed=0.0, active=None)
+                speed=0.0, active=None, step=None, step_lag={})
 
 # the last, incomplete integration period of the file is not emitted
 TAIL_LOSS = 1  # spectra
@@ -146,6 +153,11 @@ def run_scenario(name, core, filters, keep=False, verbose=False):
     signals = [wavgen.synth(sc["rate"], sc["duration"], [(B(b), lvl) for b, lvl in tones],
                             sensitivity=sc["sensitivity"])
                for tones in sc["channels"]]
+    if sc["step"]:
+        # every input drops by `drop` dB at `t` seconds
+        t, drop = sc["step"]
+        first, gain = int(round(t * sc["rate"])), 10.0 ** (-drop / 20.0)
+        signals = [sig[:first] + [x * gain for x in sig[first:]] for sig in signals]
     wavgen.write_wav(wav_path, sc["rate"], signals, sc["fmt"])
 
     # 2. configuration (written back by sonomkr-core, hence the temporary copy)
@@ -235,6 +247,9 @@ def run_scenario(name, core, filters, keep=False, verbose=False):
     for c in chans:
         tones = sc["channels"][c if c < nch else 0]
         exp = 10.0 * math.log10(sum(wavgen.level_to_amplitude(lvl, sc["sensitivity"]) ** 2 / 2 for _, lvl in tones))
+        if sc["step"]:
+            t, drop = sc["step"]
+            exp += 10.0 * math.log10((t + (sc["duration"] - t) * 10.0 ** (-drop / 10.0)) / sc["duration"])
         got = audio_rms_db(audio.get("CH%d" % (c + 1), []))
         print("audio CH%d: %.2f dB FS rms, expected %.2f" % (c + 1, got, exp))
         if abs(got - exp) > sc["tol"]:
@@ -243,6 +258,11 @@ def run_scenario(name, core, filters, keep=False, verbose=False):
     for i, c in enumerate(chans):
         tones = sc["channels"][c if c < nch else 0]
         received = spectra[i][sc["skip"]:]
+        step_index = None
+        if sc["step"]:
+            # levels are checked before the step, the step itself below
+            step_index = int(sc["step"][0] / sc["integration"])  # spectrum containing the step
+            received = spectra[i][sc["skip"]:step_index - 1]
         if not received:
             failures.append("channel %d: no usable spectrum" % (c + 1))
             continue
@@ -270,6 +290,17 @@ def run_scenario(name, core, filters, keep=False, verbose=False):
             if verbose or exp is not None or status:
                 print("  %4d  %8.1f  %8.2f  %6.2f  %8s %s" % (
                     b, B(b), mean[b], spread[b], "%.2f" % exp if exp is not None else "", status))
+
+        if step_index is not None:
+            # first spectrum where each tone band is at least half the step below its level
+            drop = sc["step"][1]
+            for b, lvl in sorted(tone_levels.items()):
+                seen = next((k for k, s in enumerate(spectra[i]) if k >= sc["skip"] and s[b] < lvl - drop / 2), None)
+                expected = step_index + sc["step_lag"].get(b, 1)
+                print("  band %d: step seen in spectrum %s (expected %d +/- 1)" % (b, seen, expected))
+                if seen is None or abs(seen - expected) > 1:
+                    failures.append("channel %d band %d: step seen in spectrum %s, expected %d +/- 1"
+                                    % (c + 1, b, seen, expected))
 
     if failures:
         print("\nFAILED %s:" % name)
