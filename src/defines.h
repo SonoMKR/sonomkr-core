@@ -69,20 +69,22 @@
 #define FREQ_USER_4 48
 #define FREQ_USER_5 49
 
-#define A_WEIGHT_0p8Hz -156.32
+// A-weighting (IEC 61672-1 analytic definition) at the exact base-10 mid-band
+// frequencies 1000 * 10^((band - 31) / 10) Hz, rounded to 0.1 dB
+#define A_WEIGHT_0p8Hz -156.6
 #define A_WEIGHT_1Hz -148.58
-#define A_WEIGHT_1p25Hz -140.83
-#define A_WEIGHT_1p6Hz -132.28
-#define A_WEIGHT_2Hz -124.55
-#define A_WEIGHT_2p5Hz -116.85
-#define A_WEIGHT_3p15Hz -108.89
-#define A_WEIGHT_4Hz -93.14
-#define A_WEIGHT_5Hz -85.4
+#define A_WEIGHT_1p25Hz -140.6
+#define A_WEIGHT_1p6Hz -132.6
+#define A_WEIGHT_2Hz -124.6
+#define A_WEIGHT_2p5Hz -116.7
+#define A_WEIGHT_3p15Hz -108.8
+#define A_WEIGHT_4Hz -100.9
+#define A_WEIGHT_5Hz -93.1
 #define A_WEIGHT_6p3Hz -85.4
-#define A_WEIGHT_8Hz -77.55
+#define A_WEIGHT_8Hz -77.8
 #define A_WEIGHT_10Hz -70.43
-#define A_WEIGHT_12p5Hz -63.58
-#define A_WEIGHT_16Hz -56.42
+#define A_WEIGHT_12p5Hz -63.4
+#define A_WEIGHT_16Hz -56.7
 #define A_WEIGHT_20Hz -50.5
 #define A_WEIGHT_25Hz -44.7
 #define A_WEIGHT_31p5Hz -39.4

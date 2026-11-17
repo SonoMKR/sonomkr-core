@@ -3,6 +3,10 @@ add_executable( test_wavreader test_wavreader.cpp )
 target_link_libraries( test_wavreader sonomkr )
 add_test( NAME wavreader COMMAND test_wavreader )
 
+add_executable( test_aweighting test_aweighting.cpp )
+target_link_libraries( test_aweighting sonomkr )
+add_test( NAME aweighting COMMAND test_aweighting )
+
 # End-to-end tests: synthetic WAV -> sonomkr-core -> ZeroMQ spectra
 find_package(Python3 COMPONENTS Interpreter)
 if(Python3_Interpreter_FOUND)
