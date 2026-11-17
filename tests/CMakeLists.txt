@@ -46,6 +46,15 @@ if(Python3_Interpreter_FOUND)
                 --filters ${PROJECT_SOURCE_DIR}/conf/filters.conf
     )
     set_tests_properties(e2e_controller PROPERTIES TIMEOUT 120)
+
+    # ALSA capture life cycle on the "null" device (no sound card needed)
+    add_test(
+        NAME e2e_alsa
+        COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/e2e_alsa.py
+                --core $<TARGET_FILE:sonomkr-core>
+                --filters ${PROJECT_SOURCE_DIR}/conf/filters.conf
+    )
+    set_tests_properties(e2e_alsa PROPERTIES TIMEOUT 120)
 else()
     message(WARNING "Python 3 not found: end-to-end WAV tests disabled")
 endif()

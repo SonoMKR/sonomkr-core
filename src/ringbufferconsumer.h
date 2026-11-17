@@ -1,6 +1,7 @@
 #ifndef RINGBUFFERCONSUMER_H
 #define RINGBUFFERCONSUMER_H
 
+#include <atomic>
 #include <thread>
 
 #include "ringbuffer.h"
@@ -11,7 +12,7 @@ class RingBufferConsumer
     RingBuffer *buffer_;
     int reader_index_;
     std::thread read_thread_;
-    bool do_read_;
+    std::atomic<bool> do_read_; // read by the consumer thread
     double *buffer_ptr_;
     unsigned long buffer_size_;
     unsigned long size_to_read_;

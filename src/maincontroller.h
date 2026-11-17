@@ -1,6 +1,7 @@
 #ifndef MAINCONTROLLER_H
 #define MAINCONTROLLER_H
 
+#include <atomic>
 #include <thread>
 #include <zmq.hpp>
 #include <zmq_addon.hpp>
@@ -13,7 +14,7 @@
 class MainController
 {
   private:
-    bool do_run_;
+    std::atomic<bool> do_run_; // read by the controller thread
     std::thread run_thread_;
 
     Configuration *config_;

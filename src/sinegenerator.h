@@ -3,6 +3,7 @@
 
 #include <iostream>
 
+#include <atomic>
 #include <thread>
 #include <string>
 #include <math.h>
@@ -14,7 +15,7 @@ private:
     RingBuffer* _audioBuffer;
     std::thread _generatorThread;
     int _rate, _periodsize;
-    bool _doSine;
+    std::atomic<bool> _doSine; // read by the generator thread
     float _freq;
     double* _periodBuf;
 

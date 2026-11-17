@@ -2,6 +2,7 @@
 #define AUDIOCAPTURE_H
 
 #include <iostream>
+#include <atomic>
 #include <thread>
 #include <string>
 #include <alsa/asoundlib.h>
@@ -26,7 +27,7 @@ class AudioCapture : public AudioSource
     int period_size_;
     int periods_;
     std::string format_;
-    bool do_capture_;
+    std::atomic<bool> do_capture_; // read by the capture thread
 
     snd_pcm_t *open_pcm();
     void run();

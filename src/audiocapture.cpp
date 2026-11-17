@@ -5,6 +5,7 @@
 AudioCapture::AudioCapture(Configuration *config, AudioBuffer *audio_buffer) :
     config_(config),
     audio_buffer_(audio_buffer),
+    sample_size_(0),
     do_capture_(false)
 {
     AudioConfig* audio_config = config_->getAudioConfig();
@@ -31,7 +32,9 @@ AudioCapture::AudioCapture(Configuration *config, AudioBuffer *audio_buffer) :
         sample_size_ = 32 / 8;
     }
     else {
-        std::cerr << ("Unsupported format") << std::endl;
+        // sample_size_ stays 0: the capture will not start
+        std::cerr << "Unsupported audio format: " << format_
+                  << " (expected S16_LE, S24_LE, S24_3LE, S32_LE or FLOAT_LE)" << std::endl;
     }
     frame_size_ = channels_ * sample_size_;
 }
@@ -49,6 +52,13 @@ void AudioCapture::run()
     int pcmreturn;
 
     do_capture_ = true;
+
+    if (sample_size_ == 0)
+    {
+        std::cerr << "Audio capture not started: unsupported audio format " << format_ << std::endl;
+        do_capture_ = false;
+        return;
+    }
 
     if (!(capture_handle_ = open_pcm()))
     {
@@ -82,7 +92,8 @@ void AudioCapture::run()
         audio_buffer_->writeAudioToBuffers(period_buf_, count, channels_, format_);
     }
     snd_pcm_close(capture_handle_);
-    free(period_buf_);
+    delete[] period_buf_;
+    period_buf_ = nullptr;
 }
 
 void AudioCapture::start(bool restart)
@@ -140,7 +151,7 @@ snd_pcm_t *AudioCapture::open_pcm()
         snd_pcm_close(pcm_handle);
         return (NULL);
     }
-    snd_pcm_format_t audio_format;
+    snd_pcm_format_t audio_format = SND_PCM_FORMAT_UNKNOWN;
     if (format_ == "S16_LE")
     {
         audio_format = SND_PCM_FORMAT_S16_LE;
@@ -160,6 +171,12 @@ snd_pcm_t *AudioCapture::open_pcm()
     else if (format_ == "FLOAT_LE")
     {
         audio_format = SND_PCM_FORMAT_FLOAT_LE;
+    }
+    else
+    {
+        std::cerr << "Unsupported audio format: " << format_ << std::endl;
+        snd_pcm_close(pcm_handle);
+        return (NULL);
     }
     err = snd_pcm_hw_params_set_format(pcm_handle, hwparams, audio_format);
     if (err < 0)

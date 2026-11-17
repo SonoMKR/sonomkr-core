@@ -39,7 +39,8 @@ void SineGenerator::run()
 
         usleep(sleepTime);
     }
-    free(_periodBuf);
+    delete[] _periodBuf;
+    _periodBuf = nullptr;
 }
 
 void SineGenerator::start()
