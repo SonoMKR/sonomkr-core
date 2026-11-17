@@ -33,6 +33,15 @@ if(Python3_Interpreter_FOUND)
         )
         set_tests_properties(e2e_${scenario} PROPERTIES TIMEOUT 120)
     endforeach()
+
+    # controller commands (REQ/REP): invalid values, inactive channel, applied settings
+    add_test(
+        NAME e2e_controller
+        COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/e2e_controller.py
+                --core $<TARGET_FILE:sonomkr-core>
+                --filters ${PROJECT_SOURCE_DIR}/conf/filters.conf
+    )
+    set_tests_properties(e2e_controller PROPERTIES TIMEOUT 120)
 else()
     message(WARNING "Python 3 not found: end-to-end WAV tests disabled")
 endif()

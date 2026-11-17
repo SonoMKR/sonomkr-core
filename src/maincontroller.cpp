@@ -1,5 +1,8 @@
 #include "maincontroller.h"
 
+#include <cerrno>
+#include <cmath>
+#include <cstdlib>
 #include <iostream>
 #include <boost/filesystem.hpp>
 
@@ -9,6 +12,26 @@
 #include "spectrumchannel.h"
 #include "configuration.h"
 #include "wavfilesource.h"
+
+// Parse a sensitivity in V/Pa sent to the controller.
+// The whole string must be a finite number strictly greater than 0
+// (no exception: an invalid request must never stop the service).
+static bool parseSensitivity(const std::string &text, double &value)
+{
+    if (text.empty())
+    {
+        return false;
+    }
+    char *end = nullptr;
+    errno = 0;
+    const double parsed = std::strtod(text.c_str(), &end);
+    if (end != text.c_str() + text.size() || errno == ERANGE || !std::isfinite(parsed) || parsed <= 0.0)
+    {
+        return false;
+    }
+    value = parsed;
+    return true;
+}
 
 MainController::MainController(Configuration *config, zmq::context_t *zmq) :
     do_run_(false),
@@ -311,13 +334,16 @@ void MainController::run()
                 continue;
             }
             if (setting == "SENSITIVITY") {
-                float sens = float(std::stod(value));
-                channel_config->sensitivity = sens;
-                if (channel == "1") {
-                    channel1_->setSentivityCorrection(- 20 * log10f(sens * P0));
+                double sens;
+                if (!parseSensitivity(value, sens)) {
+                    sendResponse(400, "Sensitivity must be a number greater than 0 (V/Pa)");
+                    continue;
                 }
-                else if (channel == "2") {
-                    channel2_->setSentivityCorrection(- 20 * log10f(sens * P0));
+                channel_config->sensitivity = sens;
+                // an inactive channel has no processing: the value is only saved for later
+                SpectrumChannel *spectrum_channel = (channel == "1") ? channel1_ : channel2_;
+                if (spectrum_channel != nullptr) {
+                    spectrum_channel->setSentivityCorrection(- 20 * log10(sens * P0));
                 }
                 config_->saveCurrentConfig();
                 sendResponseBody(200, "OK", std::to_string(channel_config->sensitivity).c_str());
