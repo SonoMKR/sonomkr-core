@@ -2,6 +2,7 @@
 #define LEQ_FILTER_H
 
 #include <math.h>
+#include <cmath>
 #include <atomic>
 #include <iostream>
 #include <libconfig.h++>
@@ -15,8 +16,11 @@ class LeqFilter : public RingBufferConsumer
   private:
     int sample_rate_;
     float integration_period_; // in seconds
-    int reset_period_;         // in samples
-    unsigned int read_counter_;
+    double samples_per_period_;  // sample_rate * integration_period, not necessarily an integer
+    unsigned long long total_samples_; // samples processed since the start
+    unsigned long long leq_count_;     // Leq values produced since the start
+    unsigned long long next_boundary_; // total_samples_ value that ends the current period
+    unsigned int read_counter_;        // samples in the current period
     float accumulator_;
 
     IirFilter filter_;

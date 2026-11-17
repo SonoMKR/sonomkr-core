@@ -9,9 +9,15 @@ LeqFilter::LeqFilter(RingBuffer *buffer,
     sample_rate_(rate),
     integration_period_(integration_periode),
     accumulator_(0.0),
-    read_counter_(0)
+    read_counter_(0),
+    leq_count_(0)
 {
-    reset_period_ = int(sample_rate_ * integration_period_);
+    // rate * period is generally not an integer (0.5 s at 441 Hz = 220.5 samples):
+    // the period boundaries are rounded from the start, never accumulated, so
+    // every band stays aligned whatever its sample rate
+    samples_per_period_ = double(sample_rate_) * double(integration_period_);
+    next_boundary_ = std::llround(samples_per_period_);
+    total_samples_ = 0;
     leq_buffer_size_ = int(300 / integration_period_); // allways 300 seconds => 5 min
     leq_buffer_ = new float[leq_buffer_size_];
 
@@ -33,13 +39,16 @@ int LeqFilter::processData(unsigned long read_position)
         sample = filter_.filter(buffer_ptr_[(i + read_position) % buffer_size_]);
         accumulator_ += sample * sample;
         read_counter_++;
+        total_samples_++;
 
-        if (read_counter_ >= reset_period_)
+        if (total_samples_ >= next_boundary_)
         {
             leq_buffer_[leq_write_position_] = 20.0 * log10((sqrt(accumulator_ / read_counter_)));
             leq_write_position_ = (leq_write_position_ + 1) % leq_buffer_size_;
-            leq_size_readable_.store(leq_size_readable_.load() + 1);
-            read_counter_ %= reset_period_;
+            leq_size_readable_.fetch_add(1); // atomic: the reader updates it concurrently
+            leq_count_++;
+            next_boundary_ = std::llround(samples_per_period_ * double(leq_count_ + 1));
+            read_counter_ = 0;
             accumulator_ = 0.0;
         }
     }
@@ -59,5 +68,5 @@ bool LeqFilter::beginReadLeq(const int &size_to_read, int &read_position)
 void LeqFilter::endReadLeq(const int &size_red)
 {
     leq_reader_position_ = (leq_reader_position_ + size_red) % leq_buffer_size_;
-    leq_size_readable_.store(leq_size_readable_.load() - size_red);
+    leq_size_readable_.fetch_sub(size_red); // atomic: the filter thread updates it concurrently
 }
